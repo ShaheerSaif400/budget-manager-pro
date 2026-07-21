@@ -1,0 +1,85 @@
+<%- include('partials/header') %>
+
+<div class="row mb-4">
+  <div class="col text-center">
+    <h2 class="fw-bold text-secondary"><i class="bi bi-bar-chart-line-fill text-warning me-2"></i>Visual Cashflow Analytics</h2>
+    <p class="text-muted">Analyze your income vs expenses side-by-side</p>
+  </div>
+</div>
+
+<div class="row justify-content-center">
+  <% if (expenses.length === 0) { %>
+    <div class="col-md-6 text-center py-5">
+      <p class="text-muted">No data available to generate charts. Add some income or expenses first!</p>
+    </div>
+  <% } else { %>
+    <!-- Income Chart Column -->
+    <div class="col-md-5 mb-4">
+      <div class="card shadow p-3 bg-white rounded">
+        <h5 class="text-center mb-3 fw-bold text-success">Income Sources</h5>
+        <div style="position: relative; height:280px; width:100%">
+          <canvas id="incomeChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Expense Chart Column -->
+    <div class="col-md-5 mb-4">
+      <div class="card shadow p-3 bg-white rounded">
+        <h5 class="text-center mb-3 fw-bold text-danger">Expense Breakdown</h5>
+        <div style="position: relative; height:280px; width:100%">
+          <canvas id="expenseChart"></canvas>
+        </div>
+      </div>
+    </div>
+  <% } %>
+</div>
+
+<% if (expenses.length > 0) { %>
+<script>
+  // Backend se data lekar safe string ke zariye parse karna
+  const rawData = '<%= JSON.stringify(expenses) %>';
+  const transactions = rawData ? JSON.parse(rawData.replace(/&#34;/g, '"')) : [];
+  
+  const incomeTotals = {};
+  const expenseTotals = {};
+
+  transactions.forEach(item => {
+    if (item.type === 'Income') {
+      incomeTotals[item.category] = (incomeTotals[item.category] || 0) + item.amount;
+    } else {
+      expenseTotals[item.category] = (expenseTotals[item.category] || 0) + item.amount;
+    }
+  });
+
+  // Income Chart
+  const incCtx = document.getElementById('incomeChart').getContext('2d');
+  new Chart(incCtx, {
+    type: 'pie',
+    data: {
+      labels: Object.keys(incomeTotals),
+      datasets: [{
+        data: Object.values(incomeTotals),
+        backgroundColor: ['#28a745', '#20c997', '#ffc107', '#17a2b8']
+      }]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+
+  // Expense Chart
+  const expCtx = document.getElementById('expenseChart').getContext('2d');
+  new Chart(expCtx, {
+    type: 'doughnut', // <--- Bas isko simple 'doughnut' kar dein
+    data: {
+      labels: Object.keys(expenseTotals),
+      datasets: [{
+        data: Object.values(expenseTotals),
+        backgroundColor: ['#dc3545', '#fd7e14', '#6f42c1', '#e83e8c', '#6c757d']
+      }]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+</script>
+<% } %>
+
+<%- include('partials/footer') %>

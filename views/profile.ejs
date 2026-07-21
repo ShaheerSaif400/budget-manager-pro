@@ -1,0 +1,101 @@
+<%- include('partials/header') %>
+
+<div class="row justify-content-center">
+  <div class="col-md-8 col-lg-6">
+    <div class="card shadow border-0 p-4 mb-5">
+      
+      <!-- Current Profile Picture -->
+      <div class="text-center mb-4">
+        <% if (user.avatar) { %>
+          <img src="<%= user.avatar %>" id="profilePreview" alt="Profile DP" class="rounded-circle img-thumbnail shadow-sm mb-2" style="width: 120px; height: 120px; object-fit: cover;" onerror="this.onerror=null; this.src='https://api.dicebear.com/7.x/bottts/svg?seed=fallback';">
+        <% } else { %>
+          <div id="defaultAvatarIcon" class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2 shadow-sm" style="width: 120px; height: 120px; font-size: 3rem;">
+            <i class="bi bi-person"></i>
+          </div>
+        <% } %>
+        <h3 class="fw-bold mb-0"><%= user.name %></h3>
+        <p class="text-muted small"><%= user.email %></p>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="row text-center bg-light rounded py-3 mb-4 g-2 border">
+        <div class="col-4 border-end">
+          <small class="text-muted d-block">Entries</small>
+          <span class="fw-bold fs-5 text-dark"><%= expenses.length %></span>
+        </div>
+        <div class="col-4 border-end">
+          <small class="text-muted d-block">Total Income</small>
+          <span class="fw-bold fs-6 text-success">
+            Rs. <%= expenses.filter(i=> i.type==='Income').reduce((acc, curr)=> acc + curr.amount, 0) %>
+          </span>
+        </div>
+        <div class="col-4">
+          <small class="text-muted d-block">Total Expense</small>
+          <span class="fw-bold fs-6 text-danger">
+            Rs. <%= expenses.filter(i=> i.type==='Expense').reduce((acc, curr)=> acc + curr.amount, 0) %>
+          </span>
+        </div>
+      </div>
+
+      <!-- Edit Profile Form -->
+      <h5 class="fw-bold mb-3 text-secondary"><i class="bi bi-pencil-square me-2"></i>Update Profile</h5>
+      <form action="/profile/update" method="POST" enctype="multipart/form-data">
+        
+        <div class="mb-3">
+          <label class="form-label small fw-bold">Full Name</label>
+          <input type="text" name="name" class="form-control" value="<%= user.name %>" required>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label small fw-bold">Email Address</label>
+          <input type="email" name="email" class="form-control" value="<%= user.email %>" required>
+        </div>
+
+        <!-- Preset Built-in Avatars -->
+        <div class="mb-3">
+          <label class="form-label small fw-bold d-block">Choose Built-in Avatar</label>
+          <div class="d-flex gap-2 justify-content-between bg-light p-2 rounded border">
+            <% const avatars = [
+              'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix',
+              'https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka',
+              'https://api.dicebear.com/7.x/bottts/svg?seed=BudgetPro',
+              'https://api.dicebear.com/7.x/micah/svg?seed=Shaheer',
+              'https://api.dicebear.com/7.x/personas/svg?seed=User1'
+            ]; %>
+            <% avatars.forEach((avatarUrl, index) => { %>
+              <div class="form-check p-0">
+                <input class="btn-check" type="radio" name="selectedAvatar" id="avatarRadio<%= index %>" value="<%= avatarUrl %>" onchange="selectPreset('<%= avatarUrl %>')">
+                <label class="btn btn-outline-warning p-1 rounded-circle" for="avatarRadio<%= index %>">
+                  <img src="<%= avatarUrl %>" style="width: 45px; height: 45px; border-radius: 50%;">
+                </label>
+              </div>
+            <% }); %>
+          </div>
+        </div>
+
+        <!-- Upload File / Direct URL -->
+        <div class="mb-3">
+          <label class="form-label small fw-bold">Upload Profile Picture from Device</label>
+          <input type="file" name="avatarFile" class="form-control" accept="image/*" id="avatarFileInput">
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label small fw-bold">Or Image URL</label>
+          <input type="url" name="avatarUrl" id="avatarUrlInput" class="form-control" value="<%= user.avatar || '' %>" placeholder="https://example.com/image.png">
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 fw-semibold"><i class="bi bi-save me-1"></i> Update Profile</button>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  function selectPreset(url) {
+    document.getElementById('avatarUrlInput').value = url;
+    document.getElementById('avatarFileInput').value = '';
+  }
+</script>
+
+<%- include('partials/footer') %>
