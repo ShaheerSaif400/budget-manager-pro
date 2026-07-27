@@ -1,32 +1,72 @@
-<%- include('partials/header') %>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Sign Up - Budget Manager</title>
-  <style>
-    body { font-family: Arial, sans-serif; background-color: #f4f4f9; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-    .card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); width: 350px; }
-    h2 { text-align: center; color: #333; margin-bottom: 20px; }
-    form { display: flex; flex-direction: column; gap: 15px; }
-    input { padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; }
-    button { padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; }
-    button:hover { background-color: #0056b3; }
-    p { text-align: center; margin-top: 15px; font-size: 14px; }
-    a { color: #007bff; text-decoration: none; }
-  </style>
-</head>
-<body>
-  <div class="card">
-    <h2>Create Account 🚀</h2>
-    <form action="/signup" method="POST">
-      <input type="text" name="name" placeholder="Full Name" required>
-      <input type="email" name="email" placeholder="Email Address" required>
-      <input type="password" name="password" placeholder="Password" required>
-      <button type="submit">Register</button>
-    </form>
-    <p>Already have an account? <a href="/login">Login here</a></p>
+<%- include('./partials/header') %>
+
+<div class="row justify-content-center mt-4 mb-5">
+  <div class="col-md-6 col-lg-5">
+    <div class="card shadow-sm border-0 rounded-3">
+      <div class="card-body p-4">
+        
+        <!-- Header -->
+        <div class="text-center mb-4">
+          <div class="bg-success-subtle text-success rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 50px; height: 50px;">
+            <i class="bi bi-person-plus-fill fs-3"></i>
+          </div>
+          <h4 class="fw-bold text-dark mb-1">Create Account</h4>
+          <p class="text-muted small">Start tracking your expenses professionally</p>
+        </div>
+
+        <!-- Flash / Error Messages -->
+        <% if (locals.error && error.length > 0) { %>
+          <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center small" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2 fs-6"></i>
+            <div><%= error %></div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        <% } %>
+
+        <form action="/register" method="POST">
+          <!-- Full Name -->
+          <div class="mb-3">
+            <label for="name" class="form-label small fw-semibold text-secondary">Full Name</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0"><i class="bi bi-person text-muted"></i></span>
+              <input type="text" class="form-control border-start-0 bg-light" id="name" name="name" placeholder="John Doe" required>
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div class="mb-3">
+            <label for="email" class="form-label small fw-semibold text-secondary">Email Address</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0"><i class="bi bi-envelope text-muted"></i></span>
+              <input type="email" class="form-control border-start-0 bg-light" id="email" name="email" placeholder="name@example.com" required>
+            </div>
+          </div>
+
+          <!-- Password -->
+          <div class="mb-4">
+            <label for="password" class="form-label small fw-semibold text-secondary">Password</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0"><i class="bi bi-shield-lock text-muted"></i></span>
+              <input type="password" class="form-control border-start-0 bg-light" id="password" name="password" placeholder="Minimum 6 characters" required>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" class="btn btn-success w-100 py-2 fw-semibold mb-3">
+            <i class="bi bi-check-circle me-1"></i> Register Account
+          </button>
+        </form>
+
+        <!-- Footer Link -->
+        <div class="text-center border-top pt-3">
+          <p class="small text-muted mb-0">Already registered? 
+            <a href="/login" class="text-success text-decoration-none fw-semibold">Sign In</a>
+          </p>
+        </div>
+
+      </div>
+    </div>
   </div>
-</body>
-</html>
-<%- include('partials/footer') %>
+</div>
+
+<%- include('./partials/footer') %>
