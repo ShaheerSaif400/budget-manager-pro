@@ -59,13 +59,69 @@ app.get('/', (req, res) => {
 });
 
 // 2. DASHBOARD PAGE (Sirf Logged-in Users ke liye - home.ejs render hoga)
+// 2. DASHBOARD PAGE WITH SEARCH, FILTERING & PAGINATION (home.ejs)
 app.get('/dashboard', isAuth, async (req, res) => {
   try {
-    const data = await Expense.find().sort({ date: -1 });
-    res.render('home', { expenses: data, user: req.session.user });
+    const { search, category, startDate, endDate, page } = req.query;
+
+    // Build dynamic Mongo Query
+    let queryFilter = {};
+
+    // 1. Text Search Filter (Title or Category)
+    if (search && search.trim() !== '') {
+      queryFilter.$or = [
+        { title: { $regex: search.trim(), $options: 'i' } },
+        { category: { $regex: search.trim(), $options: 'i' } }
+      ];
+    }
+
+    // 2. Category Filter
+    if (category && category !== 'all') {
+      queryFilter.category = category;
+    }
+
+    // 3. Date Range Filter
+    if (startDate || endDate) {
+      queryFilter.date = {};
+      if (startDate) queryFilter.date.$gte = new Date(startDate);
+      if (endDate) {
+        let eDate = new Date(endDate);
+        eDate.setHours(23, 59, 59, 999); // Include full end date
+        queryFilter.date.$lte = eDate;
+      }
+    }
+
+    // 4. Pagination Setup
+    const limit = 5; // Expenses per page
+    const pageNum = parseInt(page) || 1;
+    const skip = (pageNum - 1) * limit;
+
+    const totalCount = await Expense.countDocuments(queryFilter);
+    const totalPages = Math.ceil(totalCount / limit) || 1;
+
+    const data = await Expense.find(queryFilter)
+      .sort({ date: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    // Dynamic Categories list for UI dropdown
+    const availableCategories = [
+      'Salary', 'Freelancing', 'Pocket Money', 'Investments', 'Grants/Gifts',
+      'Food', 'Rent', 'Entertainment', 'Bills', 'Shopping', 'Medical', 'Travel', 'Other'
+    ];
+
+    res.render('home', {
+      expenses: data,
+      user: req.session.user,
+      categories: availableCategories,
+      query: req.query,
+      currentPage: pageNum,
+      totalPages: totalPages
+    });
+
   } catch (err) {
-    console.log(err);
-    res.status(500).send('Server Error');
+    console.error('Dashboard Load Error:', err);
+    res.status(500).send('Server Error loading dashboard');
   }
 });
 
