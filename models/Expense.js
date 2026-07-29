@@ -1,34 +1,32 @@
 const mongoose = require('mongoose');
 
-const TransactionSchema = new mongoose.Schema({
-  title: {
-    type: String,
-    required: [true, 'Please add a title']
-  },
-  amount: {
-    type: Number,
-    required: [true, 'Please add an amount']
+const expenseSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
   },
   type: {
     type: String,
-    required: true,
-    enum: ['Income', 'Expense'] // Ab system ko pata hoga ke paise aaye hain ya gaye hain
+    enum: ['Expense', 'Income', 'expense', 'income'], // Dono formats allow kar dein taake fail na ho
+    default: 'Expense'
   },
-  // Baki code wesa hi rahega, sirf category ke enum ko update karein:
-category: {
-  type: String,
-  required: [true, 'Please select a category'],
-  enum: [
-    // Income Categories
-    'Salary', 'Freelancing', 'Pocket Money', 'Investments', 'Grants/Gifts', 
-    // Expense Categories
-    'Food', 'Rent', 'Entertainment', 'Bills', 'Shopping', 'Medical', 'Travel', 'Other'
-  ]
-},
+  title: {
+    type: String,
+    required: true
+  },
+  amount: {
+    type: Number,
+    required: true
+  },
+  category: {
+    type: String,
+    required: true
+  },
   date: {
     type: Date,
     default: Date.now
   }
 });
 
-module.exports = mongoose.model('Expense', TransactionSchema);
+module.exports = mongoose.model('Expense', expenseSchema);

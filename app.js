@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
+const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const path = require('path');
 const multer = require('multer');
@@ -13,6 +14,24 @@ const app = express();
 
 // Database Connection
 connectDB();
+// MongoDB Connect hone ke baad chalayein (Single time Migration)
+// app.js mein connectDB(); ke niche paste karein:
+mongoose.connection.once('open', async () => {
+  try {
+    // First existing user fetch karein
+    const user = await mongoose.model('User').findOne();
+    if (user) {
+      // Un tamaam records mein jahan userId null/undefined hai, unhe current user se connect kar do
+      const result = await Expense.updateMany(
+        { $or: [{ userId: { $exists: false } }, { userId: null }] },
+        { $set: { userId: user._id } }
+      );
+
+    }
+  } catch (err) {
+    console.error("Migration Error:", err);
+  }
+});
 
 // Middleware & View Engine Setup
 app.set('view engine', 'ejs');
@@ -60,96 +79,68 @@ app.get('/', (req, res) => {
 // 2. DASHBOARD PAGE WITH SEARCH, FILTERING & PAGINATION (home.ejs)
 app.get('/dashboard', isAuth, async (req, res) => {
   try {
-    const { search, category, startDate, endDate, page } = req.query;
-
-    // 1. Build Query Filter
-    // Filter by userId IF exists, otherwise show user's records or all unassigned
-    let userIdFilter = req.session.user ? req.session.user._id : null;
-    let queryFilter = {
-      $or: [
-        { userId: userIdFilter },
-        { userId: { $exists: false } } // Retain existing older records that have no userId
-      ]
-    };
-
-    if (search) {
-      queryFilter.$and = [
-        {
-          $or: [
-            { title: { $regex: search, $options: 'i' } },
-            { category: { $regex: search, $options: 'i' } }
-          ]
-        }
-      ];
-    }
-
-    if (category && category !== 'all') {
-      queryFilter.category = category;
-    }
-
-    if (startDate || endDate) {
-      queryFilter.date = {};
-      if (startDate) queryFilter.date.$gte = new Date(startDate);
-      if (endDate) {
-        let eDate = new Date(endDate);
-        eDate.setHours(23, 59, 59, 999);
-        queryFilter.date.$lte = eDate;
-      }
-    }
-
-    // 2. Pagination Logic
+    const page = parseInt(req.query.page) || 1;
     const limit = 5;
-    const pageNum = parseInt(page) || 1;
-    const skip = (pageNum - 1) * limit;
+    const skip = (page - 1) * limit;
 
-    const totalCount = await Expense.countDocuments(queryFilter);
-    const totalPages = Math.ceil(totalCount / limit);
+    // Direct String / ObjectId double compatibility
+    const userId = req.session.user._id;
 
-    // 3. Fetch Paginated Transactions
-    const expenses = await Expense.find(queryFilter)
-      .sort({ date: -1 })
-      .skip(skip)
-      .limit(limit);
-
-    // 4. Calculate Totals (Income vs Expenses)
-    const allUserExpenses = await Expense.find({
-      $or: [
-        { userId: userIdFilter },
-        { userId: { $exists: false } }
-      ]
+    // Fetch user transactions matching userId
+    const allUserExpenses = await Expense.find({ 
+      $or: [{ userId: userId }, { userId: userId.toString() }] 
     });
 
     let totalIncome = 0;
     let totalExpense = 0;
+    const categoryTotals = {};
 
-    allUserExpenses.forEach(item => {
-      const cat = (item.category || '').toLowerCase();
-      const type = (item.type || '').toLowerCase();
+    allUserExpenses.forEach(exp => {
+      const typeVal = String(exp.type || '').toLowerCase();
+      const catVal = String(exp.category || '').toLowerCase();
+      const amt = Number(exp.amount) || 0;
 
-      if (type === 'income' || cat === 'salary' || cat === 'pocket money' || cat === 'income') {
-        totalIncome += Number(item.amount || 0);
+      if (typeVal === 'income' || catVal === 'salary' || catVal === 'pocket money') {
+        totalIncome += amt;
       } else {
-        totalExpense += Number(item.amount || 0);
+        totalExpense += amt;
+        const categoryKey = exp.category || 'Other';
+        categoryTotals[categoryKey] = (categoryTotals[categoryKey] || 0) + amt;
       }
     });
 
-    // 5. Render EJS with all data
+    // Pagination query
+    let filter = { $or: [{ userId: userId }, { userId: userId.toString() }] };
+
+    if (req.query.search) {
+      filter.title = { $regex: req.query.search, $options: 'i' };
+    }
+    if (req.query.category && req.query.category !== 'all') {
+      filter.category = req.query.category;
+    }
+
+    const totalExpensesCount = await Expense.countDocuments(filter);
+    const expenses = await Expense.find(filter)
+      .sort({ date: -1 })
+      .skip(skip)
+      .limit(limit);
+
     res.render('home', {
+      user: req.session.user,
       expenses,
+      currentPage: page,
+      totalPages: Math.ceil(totalExpensesCount / limit) || 1,
+      query: req.query,
       totalIncome,
       totalExpense,
-      currentPage: pageNum,
-      totalPages: totalPages || 1,
-      query: req.query || {},
-      user: req.session.user
+      categoryChartData: JSON.stringify(categoryTotals)
     });
 
   } catch (err) {
-    console.error("Dashboard Error:", err);
+    console.error("Dashboard Fetch Error:", err);
     res.status(500).send("Server Error");
   }
 });
-
 // 3. Financial Blog Page
 app.get('/blogs', (req, res) => {
   res.render('blogs', { user: req.session.user });

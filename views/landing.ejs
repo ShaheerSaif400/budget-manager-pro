@@ -1,39 +1,120 @@
 <%- include('partials/header') %>
 
-<!-- Hero Section -->
-<div class="d-flex gap-3">
-  <% if (user) { %>
-    <a href="/dashboard" class="btn btn-warning btn-lg px-4 fw-semibold shadow-sm"><i class="bi bi-speedometer2 me-2"></i>Go to Dashboard</a>
-    <a href="/profile" class="btn btn-outline-dark btn-lg px-4"><i class="bi bi-person-circle me-2"></i>My Profile</a>
-  <% } else { %>
-    <a href="/signup" class="btn btn-warning btn-lg px-4 fw-semibold shadow-sm"><i class="bi bi-rocket-takeoff me-2"></i>Get Started Free</a>
-    <a href="/login" class="btn btn-outline-dark btn-lg px-4"><i class="bi bi-box-arrow-in-right me-2"></i>Sign In</a>
-  <% } %>
-</div>
+<!-- HERO SECTION -->
+<section class="py-5 bg-light position-relative overflow-hidden" style="border-bottom: 1px solid #e2e8f0;">
+  <div class="container py-4">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-6">
+        <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill fw-semibold mb-3">
+          <i class="bi bi-shield-check me-1"></i> Smart Wealth Management
+        </span>
+        <h1 class="display-4 fw-extrabold text-dark mb-3" style="line-height: 1.2;">
+          Master Your Money with <span class="text-success">BudgetPro</span>
+        </h1>
+        <p class="lead text-muted mb-4">
+          Take total control of your personal finances. Track spending in real-time, generate dynamic reports, and achieve your financial goals effortlessly.
+        </p>
+        <div class="d-flex flex-wrap gap-3">
+          <% if (typeof user !== 'undefined' && user) { %>
+            <a href="/dashboard" class="btn btn-warning btn-lg fw-bold px-4 py-3 shadow-sm text-dark" style="border-radius: 12px; background-color: #f59e0b; border: none;">
+              <i class="bi bi-speedometer2 me-2"></i> Go to Dashboard
+            </a>
+            <a href="/profile" class="btn btn-outline-dark btn-lg fw-semibold px-4 py-3" style="border-radius: 12px;">
+              <i class="bi bi-person-circle me-2"></i> My Profile
+            </a>
+          <% } else { %>
+            <a href="/signup" class="btn btn-success btn-lg fw-bold px-4 py-3 shadow-sm" style="border-radius: 12px; background-color: #10b981; border: none;">
+              Get Started Free <i class="bi bi-arrow-right ms-2"></i>
+            </a>
+            <a href="/login" class="btn btn-outline-dark btn-lg fw-semibold px-4 py-3" style="border-radius: 12px;">
+              Sign In
+            </a>
+          <% } %>
+        </div>
+      </div>
 
-<!-- Features Section -->
-<div class="row g-4 py-5 text-center">
-  <div class="col-md-4">
-    <div class="card h-100 p-4 border-0 shadow-sm">
-      <div class="fs-1 text-success mb-3"><i class="bi bi-cash-stack"></i></div>
-      <h5 class="fw-bold">Dynamic Categorization</h5>
-      <p class="text-muted small">Categorize income vs expense sources dynamically with tailored input forms.</p>
+      <!-- INTERACTIVE PREVIEW CARD -->
+      <div class="col-lg-6">
+        <div class="card border-0 shadow-lg p-4 position-relative" style="border-radius: 24px; background: #ffffff;">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="d-flex align-items-center gap-2">
+              <div class="bg-success rounded-circle p-2" style="width: 12px; height: 12px;"></div>
+              <span class="fw-bold text-dark">Live Preview Analytics</span>
+            </div>
+            <span class="badge bg-light text-muted border">Realtime Sync</span>
+          </div>
+
+          <!-- Feature Cards Grid inside Preview -->
+          <div class="row g-3 mb-3">
+            <div class="col-6">
+              <div class="p-3 rounded-4" style="background-color: #f0fdf4; border: 1px solid #bbf7d0;">
+                <small class="text-success fw-semibold">Income Flow</small>
+                <h4 class="fw-bold text-dark mb-0 mt-1">+ Rs. 125,000</h4>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="p-3 rounded-4" style="background-color: #fef2f2; border: 1px solid #fecaca;">
+                <small class="text-danger fw-semibold">Expenses</small>
+                <h4 class="fw-bold text-dark mb-0 mt-1">- Rs. 42,300</h4>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-3 rounded-4 bg-light border">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="small fw-semibold text-secondary">Savings Goal Progress</span>
+              <span class="small fw-bold text-success">66%</span>
+            </div>
+            <div class="progress" style="height: 8px; border-radius: 10px;">
+              <div class="progress-bar bg-success" role="progressbar" style="width: 66%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
-  <div class="col-md-4">
-    <div class="card h-100 p-4 border-0 shadow-sm">
-      <div class="fs-1 text-primary mb-3"><i class="bi bi-pie-chart-fill"></i></div>
-      <h5 class="fw-bold">Visual Analytics</h5>
-      <p class="text-muted small">Analyze income & expense breakdowns using clear Chart.js Pie and Doughnut visualizers.</p>
+</section>
+
+<!-- ADVANCED FEATURES SECTION -->
+<section class="py-5 bg-white">
+  <div class="container py-4">
+    <div class="text-center max-w-2xl mx-auto mb-5">
+      <h2 class="fw-bold text-dark">Why Choose BudgetPro?</h2>
+      <p class="text-muted">Everything you need to streamline your daily expenses and savings.</p>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="card border-0 shadow-sm p-4 h-100" style="border-radius: 20px; background-color: #ffffff; border: 1px solid #f1f5f9;">
+          <div class="bg-success bg-opacity-10 rounded-3 p-3 d-inline-block mb-3" style="width: fit-content;">
+            <i class="bi bi-tags fs-3 text-success"></i>
+          </div>
+          <h5 class="fw-bold text-dark mb-2">Dynamic Categorization</h5>
+          <p class="text-muted small mb-0">Categorize income and expense sources dynamically with custom tags and easy popup forms.</p>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card border-0 shadow-sm p-4 h-100" style="border-radius: 20px; background-color: #ffffff; border: 1px solid #f1f5f9;">
+          <div class="bg-primary bg-opacity-10 rounded-3 p-3 d-inline-block mb-3" style="width: fit-content;">
+            <i class="bi bi-pie-chart fs-3 text-primary"></i>
+          </div>
+          <h5 class="fw-bold text-dark mb-2">Visual Analytics</h5>
+          <p class="text-muted small mb-0">Analyze spending habits using Chart.js interactive Doughnut and Bar charts in real-time.</p>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card border-0 shadow-sm p-4 h-100" style="border-radius: 20px; background-color: #ffffff; border: 1px solid #f1f5f9;">
+          <div class="bg-warning bg-opacity-10 rounded-3 p-3 d-inline-block mb-3" style="width: fit-content;">
+            <i class="bi bi-shield-lock fs-3 text-warning"></i>
+          </div>
+          <h5 class="fw-bold text-dark mb-2">Secure & Private Data</h5>
+          <p class="text-muted small mb-0">Encrypted user accounts and secure session authorization keep your private records safe.</p>
+        </div>
+      </div>
     </div>
   </div>
-  <div class="col-md-4">
-    <div class="card h-100 p-4 border-0 shadow-sm">
-      <div class="fs-1 text-warning mb-3"><i class="bi bi-shield-lock-fill"></i></div>
-      <h5 class="fw-bold">Secure Data</h5>
-      <p class="text-muted small">Encrypted user accounts and session authorization keep your private records safe.</p>
-    </div>
-  </div>
-</div>
+</section>
 
 <%- include('partials/footer') %>
