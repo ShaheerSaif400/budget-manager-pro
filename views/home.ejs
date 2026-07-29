@@ -1,209 +1,269 @@
 <%- include('partials/header') %>
 
-<!-- Top Status Cards (Income, Expense, Balance) -->
-<% 
-  let totalIncome = 0;
-  let totalExpense = 0;
-  expenses.forEach(t => {
-    if(t.type === 'Income') totalIncome += t.amount;
-    else totalExpense += t.amount;
-  });
-  let netBalance = totalIncome - totalExpense;
-%>
-<div class="row mb-4 text-center">
-  <div class="col-md-4 mb-2">
-    <div class="card bg-success text-white shadow-sm p-3">
-      <h6>Total Income (Filtered)</h6>
-      <h3 class="fw-bold">Rs. <%= totalIncome %></h3>
+<div class="container py-2">
+  
+  <!-- Top Welcome Banner & Trigger Button -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h3 class="fw-bold text-dark mb-1">Dashboard</h3>
+      <p class="text-muted small mb-0">Track and manage your expenses effortlessly.</p>
+    </div>
+    <div>
+      <!-- Modal Trigger Button -->
+      <button type="button" class="btn btn-success fw-semibold px-3 py-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#addTransactionModal" style="border-radius: 10px; background-color: #10b981; border: none;">
+        <i class="bi bi-plus-lg me-1"></i> Add Transaction
+      </button>
     </div>
   </div>
-  <div class="col-md-4 mb-2">
-    <div class="card bg-danger text-white shadow-sm p-3">
-      <h6>Total Expenses (Filtered)</h6>
-      <h3 class="fw-bold">Rs. <%= totalExpense %></h3>
-    </div>
-  </div>
-  <div class="col-md-4 mb-2">
-    <div class="card <%= netBalance >= 0 ? 'bg-primary' : 'bg-warning text-dark' %> text-white shadow-sm p-3">
-      <h6>Net Balance</h6>
-      <h3 class="fw-bold">Rs. <%= netBalance %></h3>
-    </div>
-  </div>
-</div>
 
-<!-- Search & Filter Bar -->
-<div class="card shadow-sm border-0 mb-4 bg-light">
-  <div class="card-body p-3">
-    <form action="/dashboard" method="GET" class="row g-2 align-items-end">
+  <!-- Summary Cards Section -->
+  <div class="row g-4 mb-4">
+    
+    <!-- Total Income Card -->
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm p-3 h-100" style="border-radius: 16px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white;">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="fw-medium text-white-50">Total Income</span>
+          <div class="bg-white bg-opacity-25 rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+            <i class="bi bi-arrow-down-left-circle fs-5 text-white"></i>
+          </div>
+        </div>
+        <h2 class="fw-bold mb-0">Rs. <%= typeof totalIncome !== 'undefined' ? totalIncome : 0 %></h2>
+        <small class="text-white-50 mt-2 d-block"><i class="bi bi-graph-up me-1"></i> Lifetime total earnings</small>
+      </div>
+    </div>
+
+    <!-- Total Expense Card -->
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm p-3 h-100" style="border-radius: 16px; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white;">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="fw-medium text-white-50">Total Expenses</span>
+          <div class="bg-white bg-opacity-25 rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+            <i class="bi bi-arrow-up-right-circle fs-5 text-white"></i>
+          </div>
+        </div>
+        <h2 class="fw-bold mb-0">Rs. <%= typeof totalExpense !== 'undefined' ? totalExpense : 0 %></h2>
+        <small class="text-white-50 mt-2 d-block"><i class="bi bi-wallet2 me-1"></i> Lifetime total spent</small>
+      </div>
+    </div>
+
+    <!-- Net Balance Card -->
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm p-3 h-100" style="border-radius: 16px; background: #ffffff; border: 1px solid #e2e8f0;">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="fw-semibold text-muted">Net Savings</span>
+          <div class="bg-light rounded-circle p-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+            <i class="bi bi-bank fs-5 text-dark"></i>
+          </div>
+        </div>
+        <h2 class="fw-bold mb-0 text-dark">
+          Rs. <%= (typeof totalIncome !== 'undefined' ? totalIncome : 0) - (typeof totalExpense !== 'undefined' ? totalExpense : 0) %>
+        </h2>
+        <small class="text-success fw-medium mt-2 d-block"><i class="bi bi-shield-check me-1"></i> Current balance</small>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Filter & Search Bar Section -->
+  <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: 16px; background-color: #ffffff;">
+    <form action="/dashboard" method="GET" class="row g-3 align-items-end">
       
       <!-- Search Input -->
       <div class="col-md-3">
-        <label class="form-label small fw-semibold text-muted mb-1">Search</label>
-        <div class="input-group input-group-sm">
-          <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
-          <input type="text" name="search" class="form-control" placeholder="Search title..." value="<%= (typeof query !== 'undefined' && query.search) ? query.search : '' %>">
+        <label class="form-label fw-semibold text-secondary small">Search Title</label>
+        <div class="input-group">
+          <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
+          <input type="text" name="search" class="form-control bg-light border-start-0" placeholder="Title..." value="<%= query && query.search ? query.search : '' %>">
         </div>
       </div>
 
       <!-- Category Dropdown -->
       <div class="col-md-3">
-        <label class="form-label small fw-semibold text-muted mb-1">Category</label>
-        <select name="category" class="form-select form-select-sm">
+        <label class="form-label fw-semibold text-secondary small">Category</label>
+        <select name="category" class="form-select bg-light">
           <option value="all">All Categories</option>
-          <% if (typeof categories !== 'undefined' && categories.length > 0) { %>
-            <% categories.forEach(cat => { %>
-              <option value="<%= cat %>" <%= (typeof query !== 'undefined' && query.category === cat) ? 'selected' : '' %>><%= cat %></option>
-            <% }) %>
-          <% } %>
+          <option value="Food" <%= query && query.category === 'Food' ? 'selected' : '' %>>Food & Dining</option>
+          <option value="Transport" <%= query && query.category === 'Transport' ? 'selected' : '' %>>Transport</option>
+          <option value="Bills" <%= query && query.category === 'Bills' ? 'selected' : '' %>>Bills & Utilities</option>
+          <option value="Entertainment" <%= query && query.category === 'Entertainment' ? 'selected' : '' %>>Entertainment</option>
+          <option value="Salary" <%= query && query.category === 'Salary' ? 'selected' : '' %>>Salary / Income</option>
+          <option value="Pocket Money" <%= query && query.category === 'Pocket Money' ? 'selected' : '' %>>Pocket Money</option>
         </select>
       </div>
 
-      <!-- Start Date -->
+      <!-- From Date -->
       <div class="col-md-2">
-        <label class="form-label small fw-semibold text-muted mb-1">From Date</label>
-        <input type="date" name="startDate" class="form-control form-control-sm" value="<%= (typeof query !== 'undefined' && query.startDate) ? query.startDate : '' %>">
+        <label class="form-label fw-semibold text-secondary small">From Date</label>
+        <input type="date" name="startDate" class="form-control bg-light" value="<%= query && query.startDate ? query.startDate : '' %>">
       </div>
 
-      <!-- End Date -->
+      <!-- To Date -->
       <div class="col-md-2">
-        <label class="form-label small fw-semibold text-muted mb-1">To Date</label>
-        <input type="date" name="endDate" class="form-control form-control-sm" value="<%= (typeof query !== 'undefined' && query.endDate) ? query.endDate : '' %>">
+        <label class="form-label fw-semibold text-secondary small">To Date</label>
+        <input type="date" name="endDate" class="form-control bg-light" value="<%= query && query.endDate ? query.endDate : '' %>">
       </div>
 
-      <!-- Submit & Reset -->
-      <div class="col-md-2 d-flex gap-1">
-        <button type="submit" class="btn btn-primary btn-sm w-100"><i class="bi bi-funnel-fill"></i> Filter</button>
-        <a href="/dashboard" class="btn btn-outline-secondary btn-sm w-100">Reset</a>
+      <!-- Buttons -->
+      <div class="col-md-2 d-flex gap-2">
+        <button type="submit" class="btn btn-success fw-semibold w-100 py-2" style="border-radius: 10px; background-color: #10b981; border: none;">
+          <i class="bi bi-funnel me-1"></i> Filter
+        </button>
+        <a href="/dashboard" class="btn btn-light fw-semibold text-muted py-2 border" style="border-radius: 10px;" title="Reset Filters">
+          <i class="bi bi-arrow-counterclockwise"></i>
+        </a>
       </div>
 
     </form>
   </div>
-</div>
 
-<div class="row">
-  <!-- Left Column: Add Transaction Form -->
-  <div class="col-md-5 mb-4">
-    <div class="card shadow-sm p-4">
-      <h4 class="fw-bold mb-3 text-secondary"><i class="bi bi-plus-circle-fill text-primary me-2"></i>Add New Transaction</h4>
-      <form action="/add-expense" method="POST">
-        
-        <!-- Transaction Type -->
-        <div class="mb-3">
-          <label class="form-label small fw-bold">Transaction Type</label>
-          <select name="type" id="transactionType" class="form-select" required>
-            <option value="Expense" selected>Expense</option>
-            <option value="Income">Income</option>
-          </select>
-        </div>
-
-        <!-- Title / Description -->
-        <div class="mb-3">
-          <input type="text" name="title" class="form-control" placeholder="Description (e.g., Salary, Biryani)" required>
-        </div>
-
-        <!-- Amount -->
-        <div class="mb-3">
-          <input type="number" name="amount" class="form-control" placeholder="Amount (PKR)" required>
-        </div>
-
-        <!-- Dynamic Category Dropdown -->
-        <div class="mb-3">
-          <label class="form-label small fw-bold">Category</label>
-          <select name="category" id="transactionCategory" class="form-select" required>
-            <option value="" disabled selected>Select Category</option>
-            
-            <!-- Expense Options -->
-            <option class="expense-opt" value="Food">Food</option>
-            <option class="expense-opt" value="Rent">Rent</option>
-            <option class="expense-opt" value="Entertainment">Entertainment</option>
-            <option class="expense-opt" value="Bills">Bills</option>
-            <option class="expense-opt" value="Shopping">Shopping</option>
-            <option class="expense-opt" value="Medical">Medical</option>
-            <option class="expense-opt" value="Travel">Travel</option>
-            <option class="expense-opt" value="Other">Other</option>
-
-            <!-- Income Options -->
-            <option class="income-opt" value="Salary">Salary</option>
-            <option class="income-opt" value="Freelancing">Freelancing</option>
-            <option class="income-opt" value="Pocket Money">Pocket Money</option>
-            <option class="income-opt" value="Investments">Investments</option>
-            <option class="income-opt" value="Grants/Gifts">Grants/Gifts</option>
-          </select>
-        </div>
-
-        <button type="submit" class="btn btn-dark w-100">Submit</button>
-      </form>
+  <!-- Transactions Table Section -->
+  <div class="card border-0 shadow-sm" style="border-radius: 16px; background-color: #ffffff; overflow: hidden;">
+    <div class="card-header bg-white py-3 border-bottom-0 d-flex justify-content-between align-items-center">
+      <h5 class="fw-bold text-dark mb-0">Recent Transactions</h5>
+      <span class="badge bg-light text-dark fw-normal border">Page <%= currentPage %> of <%= totalPages || 1 %></span>
     </div>
-  </div>
 
-  <!-- Right Column: History List -->
-  <div class="col-md-7">
-    <div class="card shadow-sm p-4">
-      <h4 class="mb-3 text-secondary">Transaction History</h4>
-      <ul class="list-group mb-3">
-        <% if (expenses.length === 0) { %>
-          <li class="list-group-item text-center text-muted py-4">No transactions found matching your criteria.</li>
-        <% } else { %>
-          <% expenses.forEach(t => { %>
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-              <div>
-                <h6 class="my-0"><%= t.title %></h6>
-                <span class="badge bg-secondary rounded-pill small"><%= t.category %></span>
-                <span class="badge <%= t.type === 'Income' ? 'bg-success' : 'bg-danger' %> rounded-pill small"><%= t.type %></span>
-              </div>
-              <span class="<%= t.type === 'Income' ? 'text-success' : 'text-danger' %> fw-bold">
-                <%= t.type === 'Income' ? '+' : '-' %> Rs. <%= t.amount %>
-              </span>
-            </li>
-          <% }) %>
-        <% } %>
-      </ul>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light text-secondary small text-uppercase">
+          <tr>
+            <th class="ps-4">Title</th>
+            <th>Category</th>
+            <th>Date</th>
+            <th>Amount</th>
+            <th class="text-end pe-4">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (expenses && expenses.length > 0) { %>
+            <% expenses.forEach(exp => { %>
+              <% 
+                const catLower = (exp.category || '').toLowerCase();
+                const typeLower = (exp.type || '').toLowerCase();
+                const isIncome = typeLower === 'income' || catLower === 'salary' || catLower === 'pocket money' || catLower === 'income';
+              %>
+              <tr>
+                <td class="ps-4 fw-semibold text-dark">
+                  <%= exp.title %>
+                  <% if (exp.receipt) { %>
+                    <i class="bi bi-paperclip text-muted ms-1" title="Receipt attached"></i>
+                  <% } %>
+                </td>
+                <td>
+                  <span class="badge bg-light text-secondary border px-2 py-1"><%= exp.category %></span>
+                </td>
+                <td class="text-muted small">
+                  <%= new Date(exp.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) %>
+                </td>
+                <td class="fw-bold <%= isIncome ? 'text-success' : 'text-danger' %>">
+                  <%= isIncome ? '+' : '-' %> Rs. <%= exp.amount %>
+                </td>
+                <td class="text-end pe-4">
+                  <a href="/edit-expense/<%= exp._id %>" class="btn btn-sm btn-light text-primary me-1" title="Edit"><i class="bi bi-pencil-square"></i></a>
+                  <a href="/delete-expense/<%= exp._id %>" class="btn btn-sm btn-light text-danger" onclick="return confirm('Are you sure?')" title="Delete"><i class="bi bi-trash"></i></a>
+                </td>
+              </tr>
+            <% }) %>
+          <% } else { %>
+            <tr>
+              <td colspan="5" class="text-center py-5 text-muted">
+                <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                No records found matching your criteria.
+              </td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
 
-      <!-- Pagination Controls -->
-      <% if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
-        <nav class="d-flex justify-content-center mt-2">
-          <ul class="pagination pagination-sm mb-0">
+    <!-- Pagination Controls -->
+    <% if (totalPages > 1) { %>
+      <div class="card-footer bg-white border-0 py-3">
+        <nav>
+          <ul class="pagination pagination-sm justify-content-center mb-0">
             <li class="page-item <%= currentPage === 1 ? 'disabled' : '' %>">
-              <a class="page-link" href="/dashboard?page=<%= currentPage - 1 %>&search=<%= (typeof query !== 'undefined' && query.search) || '' %>&category=<%= (typeof query !== 'undefined' && query.category) || '' %>&startDate=<%= (typeof query !== 'undefined' && query.startDate) || '' %>&endDate=<%= (typeof query !== 'undefined' && query.endDate) || '' %>">Previous</a>
+              <a class="page-link" href="/dashboard?page=<%= currentPage - 1 %>&search=<%= query.search || '' %>&category=<%= query.category || '' %>&startDate=<%= query.startDate || '' %>&endDate=<%= query.endDate || '' %>">Previous</a>
             </li>
+
             <% for(let i = 1; i <= totalPages; i++) { %>
               <li class="page-item <%= currentPage === i ? 'active' : '' %>">
-                <a class="page-link" href="/dashboard?page=<%= i %>&search=<%= (typeof query !== 'undefined' && query.search) || '' %>&category=<%= (typeof query !== 'undefined' && query.category) || '' %>&startDate=<%= (typeof query !== 'undefined' && query.startDate) || '' %>&endDate=<%= (typeof query !== 'undefined' && query.endDate) || '' %>"><%= i %></a>
+                <a class="page-link <%= currentPage === i ? 'bg-success border-success' : '' %>" href="/dashboard?page=<%= i %>&search=<%= query.search || '' %>&category=<%= query.category || '' %>&startDate=<%= query.startDate || '' %>&endDate=<%= query.endDate || '' %>"><%= i %></a>
               </li>
             <% } %>
+
             <li class="page-item <%= currentPage === totalPages ? 'disabled' : '' %>">
-              <a class="page-link" href="/dashboard?page=<%= currentPage + 1 %>&search=<%= (typeof query !== 'undefined' && query.search) || '' %>&category=<%= (typeof query !== 'undefined' && query.category) || '' %>&startDate=<%= (typeof query !== 'undefined' && query.startDate) || '' %>&endDate=<%= (typeof query !== 'undefined' && query.endDate) || '' %>">Next</a>
+              <a class="page-link" href="/dashboard?page=<%= currentPage + 1 %>&search=<%= query.search || '' %>&category=<%= query.category || '' %>&startDate=<%= query.startDate || '' %>&endDate=<%= query.endDate || '' %>">Next</a>
             </li>
           </ul>
         </nav>
-      <% } %>
+      </div>
+    <% } %>
+
+  </div>
+
+</div>
+
+<!-- ========================================== -->
+<!-- ADD TRANSACTION POPUP MODAL -->
+<!-- ========================================== -->
+<div class="modal fade" id="addTransactionModal" tabindex="-1" aria-labelledby="addTransactionModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+      
+      <div class="modal-header border-bottom-0 pt-4 px-4 pb-0">
+        <h5 class="modal-title fw-bold text-dark" id="addTransactionModalLabel">Add New Transaction</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body p-4">
+        <form action="/add-expense" method="POST">
+          
+          <!-- Type Select Input in Modal -->
+<div class="mb-3">
+  <label class="form-label fw-semibold text-secondary small">Transaction Type</label>
+  <select name="type" class="form-select bg-light" required>
+    <option value="Expense">Expense</option>
+    <option value="Income">Income</option>
+  </select>
+</div>
+
+          <!-- Title -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold text-secondary small">Title</label>
+            <input type="text" name="title" class="form-control bg-light" placeholder="e.g. Lunch, Salary, Groceries" required>
+          </div>
+
+          <!-- Amount -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold text-secondary small">Amount (Rs.)</label>
+            <input type="number" name="amount" class="form-control bg-light" placeholder="e.g. 1500" min="0" step="any" required>
+          </div>
+
+          <!-- Category -->
+          <div class="mb-4">
+            <label class="form-label fw-semibold text-secondary small">Category</label>
+            <select name="category" class="form-select bg-light" required>
+              <option value="Food">Food & Dining</option>
+              <option value="Transport">Transport</option>
+              <option value="Bills">Bills & Utilities</option>
+              <option value="Entertainment">Entertainment</option>
+              <option value="Salary">Salary</option>
+              <option value="Pocket Money">Pocket Money</option>
+            </select>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-success fw-semibold w-100 py-2" style="border-radius: 10px; background-color: #10b981; border: none;">Save Transaction</button>
+            <button type="button" class="btn btn-light border fw-semibold w-100 py-2" data-bs-dismiss="modal" style="border-radius: 10px;">Cancel</button>
+          </div>
+
+        </form>
+      </div>
 
     </div>
   </div>
 </div>
-
-<script>
-  const typeSelect = document.getElementById('transactionType');
-  const categorySelect = document.getElementById('transactionCategory');
-
-  function updateCategories() {
-    const selectedType = typeSelect.value;
-    const incomeOptions = document.querySelectorAll('.income-opt');
-    const expenseOptions = document.querySelectorAll('.expense-opt');
-
-    categorySelect.value = "";
-
-    if (selectedType === 'Income') {
-      incomeOptions.forEach(opt => opt.style.display = 'block');
-      expenseOptions.forEach(opt => opt.style.display = 'none');
-    } else {
-      incomeOptions.forEach(opt => opt.style.display = 'none');
-      expenseOptions.forEach(opt => opt.style.display = 'block');
-    }
-  }
-
-  typeSelect.addEventListener('change', updateCategories);
-  document.addEventListener('DOMContentLoaded', updateCategories);
-</script>
 
 <%- include('partials/footer') %>

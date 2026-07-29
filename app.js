@@ -50,82 +50,107 @@ const isAuth = (req, res, next) => {
 };
 
 
-//ROUTES
+// ================= ROUTES =================
 
-
-// 1. HOME / LANDING PAGE (Guest aur Logged-in dono ke liye - landing.ejs render hoga)
+// 1. HOME / LANDING PAGE
 app.get('/', (req, res) => {
   res.render('landing', { user: req.session.user || null });
 });
 
-// 2. DASHBOARD PAGE (Sirf Logged-in Users ke liye - home.ejs render hoga)
 // 2. DASHBOARD PAGE WITH SEARCH, FILTERING & PAGINATION (home.ejs)
 app.get('/dashboard', isAuth, async (req, res) => {
   try {
     const { search, category, startDate, endDate, page } = req.query;
 
-    // Build dynamic Mongo Query
-    let queryFilter = {};
+    // 1. Build Query Filter
+    // Filter by userId IF exists, otherwise show user's records or all unassigned
+    let userIdFilter = req.session.user ? req.session.user._id : null;
+    let queryFilter = {
+      $or: [
+        { userId: userIdFilter },
+        { userId: { $exists: false } } // Retain existing older records that have no userId
+      ]
+    };
 
-    // 1. Text Search Filter (Title or Category)
-    if (search && search.trim() !== '') {
-      queryFilter.$or = [
-        { title: { $regex: search.trim(), $options: 'i' } },
-        { category: { $regex: search.trim(), $options: 'i' } }
+    if (search) {
+      queryFilter.$and = [
+        {
+          $or: [
+            { title: { $regex: search, $options: 'i' } },
+            { category: { $regex: search, $options: 'i' } }
+          ]
+        }
       ];
     }
 
-    // 2. Category Filter
     if (category && category !== 'all') {
       queryFilter.category = category;
     }
 
-    // 3. Date Range Filter
     if (startDate || endDate) {
       queryFilter.date = {};
       if (startDate) queryFilter.date.$gte = new Date(startDate);
       if (endDate) {
         let eDate = new Date(endDate);
-        eDate.setHours(23, 59, 59, 999); // Include full end date
+        eDate.setHours(23, 59, 59, 999);
         queryFilter.date.$lte = eDate;
       }
     }
 
-    // 4. Pagination Setup
-    const limit = 5; // Expenses per page
+    // 2. Pagination Logic
+    const limit = 5;
     const pageNum = parseInt(page) || 1;
     const skip = (pageNum - 1) * limit;
 
     const totalCount = await Expense.countDocuments(queryFilter);
-    const totalPages = Math.ceil(totalCount / limit) || 1;
+    const totalPages = Math.ceil(totalCount / limit);
 
-    const data = await Expense.find(queryFilter)
+    // 3. Fetch Paginated Transactions
+    const expenses = await Expense.find(queryFilter)
       .sort({ date: -1 })
       .skip(skip)
       .limit(limit);
 
-    // Dynamic Categories list for UI dropdown
-    const availableCategories = [
-      'Salary', 'Freelancing', 'Pocket Money', 'Investments', 'Grants/Gifts',
-      'Food', 'Rent', 'Entertainment', 'Bills', 'Shopping', 'Medical', 'Travel', 'Other'
-    ];
+    // 4. Calculate Totals (Income vs Expenses)
+    const allUserExpenses = await Expense.find({
+      $or: [
+        { userId: userIdFilter },
+        { userId: { $exists: false } }
+      ]
+    });
 
+    let totalIncome = 0;
+    let totalExpense = 0;
+
+    allUserExpenses.forEach(item => {
+      const cat = (item.category || '').toLowerCase();
+      const type = (item.type || '').toLowerCase();
+
+      if (type === 'income' || cat === 'salary' || cat === 'pocket money' || cat === 'income') {
+        totalIncome += Number(item.amount || 0);
+      } else {
+        totalExpense += Number(item.amount || 0);
+      }
+    });
+
+    // 5. Render EJS with all data
     res.render('home', {
-      expenses: data,
-      user: req.session.user,
-      categories: availableCategories,
-      query: req.query,
+      expenses,
+      totalIncome,
+      totalExpense,
       currentPage: pageNum,
-      totalPages: totalPages
+      totalPages: totalPages || 1,
+      query: req.query || {},
+      user: req.session.user
     });
 
   } catch (err) {
-    console.error('Dashboard Load Error:', err);
-    res.status(500).send('Server Error loading dashboard');
+    console.error("Dashboard Error:", err);
+    res.status(500).send("Server Error");
   }
 });
 
-// 3. Financial Blog Page (Public + Logged-in)
+// 3. Financial Blog Page
 app.get('/blogs', (req, res) => {
   res.render('blogs', { user: req.session.user });
 });
@@ -172,17 +197,33 @@ app.post('/signup', async (req, res) => {
   }
 });
 
-// 5. Expense Transactions Route
+// 5. Expense Transactions Route (POST ONLY)
+// 5. Save Transaction Route
 app.post('/add-expense', isAuth, async (req, res) => {
   try {
-    const { type, title, amount, category } = req.body;
-    await Expense.create({ type, title, amount, category });
+    let { type, title, amount, category } = req.body;
+
+    // Capitalize type to match Mongoose schema ('Expense' / 'Income')
+    if (type) {
+      type = type.charAt(0).toUpperCase() + type.slice(1).toLowerCase();
+    }
+
+    // Save transaction with active User ID attached
+    await Expense.create({
+      userId: req.session.user._id,
+      type: type || 'Expense',
+      title,
+      amount: Number(amount),
+      category,
+      date: new Date()
+    });
+
     res.redirect('/dashboard');
   } catch (err) {
-    res.status(500).send('Error saving transaction');
+    console.error("Save Expense Error:", err);
+    res.redirect('/dashboard'); // Error aaye tab bhi dashboard par wapas chala jaye
   }
 });
-
 // 6. Analytics Page
 app.get('/analytics', isAuth, async (req, res) => {
   try {
@@ -203,17 +244,15 @@ app.get('/profile', isAuth, async (req, res) => {
   }
 });
 
-// 8. Profile Update Route (File Upload + Preset Avatar Handling)
+// 8. Profile Update Route
 app.post('/profile/update', isAuth, upload.single('avatarFile'), async (req, res) => {
   try {
     const { name, email, avatarUrl } = req.body;
     let finalAvatar = req.session.user.avatar || '';
 
-    // Priority 1: Agar user ne device se local picture upload ki
     if (req.file) {
       finalAvatar = '/uploads/' + req.file.filename;
     } 
-    // Priority 2: Agar user ne built-in avatar select kiya ya image link paste kiya
     else if (avatarUrl && avatarUrl.trim() !== '') {
       finalAvatar = avatarUrl;
     }
@@ -224,7 +263,7 @@ app.post('/profile/update', isAuth, upload.single('avatarFile'), async (req, res
       { new: true }
     );
 
-    req.session.user = updatedUser; // Update active session
+    req.session.user = updatedUser;
     res.redirect('/profile');
   } catch (err) {
     console.log(err);

@@ -1,63 +1,54 @@
-<%- include('./partials/header') %>
+<%- include('partials/header') %>
 
-<div class="row justify-content-center mt-5">
+<div class="row justify-content-center align-items-center my-5">
   <div class="col-md-5 col-lg-4">
-    <div class="card shadow-sm border-0 rounded-3">
-      <div class="card-body p-4">
-        
-        <!-- Header with Professional Bootstrap Icon -->
-        <div class="text-center mb-4">
-          <div class="bg-primary-subtle text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 50px; height: 50px;">
-            <i class="bi bi-person-lock fs-3"></i>
-          </div>
-          <h4 class="fw-bold text-dark mb-1">Welcome Back</h4>
-          <p class="text-muted small">Sign in to manage your budget</p>
+    <div class="card border-0 shadow-lg p-4" style="border-radius: 20px; background-color: #ffffff;">
+      
+      <!-- Logo & Header -->
+      <div class="text-center mb-4">
+        <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex p-3 text-success mb-2">
+          <i class="bi bi-wallet2 fs-2"></i>
         </div>
-
-        <!-- Flash / Error Messages -->
-        <% if (locals.error && error.length > 0) { %>
-          <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center small" role="alert">
-            <i class="bi bi-exclamation-triangle-fill me-2 fs-6"></i>
-            <div><%= error %></div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-          </div>
-        <% } %>
-
-        <form action="/login" method="POST">
-          <!-- Email Input -->
-          <div class="mb-3">
-            <label for="email" class="form-label small fw-semibold text-secondary">Email Address</label>
-            <div class="input-group">
-              <span class="input-group-text bg-light border-end-0"><i class="bi bi-envelope text-muted"></i></span>
-              <input type="email" class="form-control border-start-0 bg-light" id="email" name="email" placeholder="name@example.com" required>
-            </div>
-          </div>
-
-          <!-- Password Input -->
-          <div class="mb-4">
-            <label for="password" class="form-label small fw-semibold text-secondary">Password</label>
-            <div class="input-group">
-              <span class="input-group-text bg-light border-end-0"><i class="bi bi-key text-muted"></i></span>
-              <input type="password" class="form-control border-start-0 bg-light" id="password" name="password" placeholder="••••••••" required>
-            </div>
-          </div>
-
-          <!-- Submit Button -->
-          <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold mb-3">
-            <i class="bi bi-box-arrow-in-right me-1"></i> Sign In
-          </button>
-        </form>
-
-        <!-- Footer Link -->
-        <div class="text-center border-top pt-3">
-          <p class="small text-muted mb-0">Don't have an account? 
-            <a href="/register" class="text-primary text-decoration-none fw-semibold">Create Account</a>
-          </p>
-        </div>
-
+        <h3 class="fw-bold text-dark mb-1">Welcome Back</h3>
+        <p class="text-muted small">Enter your credentials to access your dashboard</p>
       </div>
+
+      <!-- Flash / Error Message -->
+      <% if (locals.error_msg && error_msg.length > 0) { %>
+        <div class="alert alert-danger border-0 small py-2 text-center mb-3" style="border-radius: 10px;">
+          <%= error_msg %>
+        </div>
+      <% } %>
+
+      <!-- Login Form -->
+      <form action="/login" method="POST">
+        <div class="mb-3">
+          <label class="form-label fw-semibold small text-secondary">Email Address</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-envelope"></i></span>
+            <input type="email" name="email" class="form-control bg-light border-start-0" placeholder="name@example.com" required>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label fw-semibold small text-secondary">Password</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-lock"></i></span>
+            <input type="password" name="password" class="form-control bg-light border-start-0" placeholder="••••••••" required>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-success fw-bold w-100 py-2 mb-3" style="border-radius: 12px; background-color: #10b981; border: none;">
+          Sign In
+        </button>
+      </form>
+
+      <div class="text-center mt-2">
+        <p class="text-muted small mb-0">Don't have an account? <a href="/signup" class="text-success fw-semibold text-decoration-none">Create One</a></p>
+      </div>
+
     </div>
   </div>
 </div>
 
-<%- include('./partials/footer') %>
+<%- include('partials/footer') %>
