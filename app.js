@@ -141,6 +141,58 @@ app.get('/dashboard', isAuth, async (req, res) => {
     res.status(500).send("Server Error");
   }
 });
+
+// 1. DELETE TRANSACTION ROUTE
+// DELETE TRANSACTION ROUTE (Fixed Version)
+app.post('/expense/delete/:id', async (req, res) => {
+  try {
+    const expenseId = req.params.id;
+    
+    const deletedExpense = await Expense.findByIdAndDelete(expenseId);
+
+
+
+    res.redirect('/dashboard');
+  } catch (err) {
+    console.error("Delete Error:", err);
+    res.status(500).send("Error deleting transaction");
+  }
+});
+
+// 2. EDIT / UPDATE TRANSACTION ROUTE
+// EDIT TRANSACTION ROUTE 
+app.post('/expense/edit/:id', async (req, res) => {
+  try {
+    const expenseId = req.params.id;
+    const { title, amount, category, type, date } = req.body;
+
+    // Type Casing Formatting
+    let formattedType = 'Expense';
+    if (type && typeof type === 'string') {
+      formattedType = type.charAt(0).toUpperCase() + type.slice(1).toLowerCase();
+    }
+
+
+    const updatedExpense = await Expense.findByIdAndUpdate(
+      expenseId,
+      {
+        title,
+        amount: Number(amount) || 0,
+        category,
+        type: formattedType,
+        date: date ? new Date(date) : new Date()
+      },
+      { new: true } 
+    );
+
+
+
+    res.redirect('/dashboard');
+  } catch (err) {
+    console.error("Edit Error:", err);
+    res.status(500).send("Error updating expense: " + err.message);
+  }
+});
 // 3. Financial Blog Page
 app.get('/blogs', (req, res) => {
   res.render('blogs', { user: req.session.user });
