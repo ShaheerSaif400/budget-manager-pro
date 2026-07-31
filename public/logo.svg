@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 120" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient for Icon -->
+    <linearGradient id="iconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10B981" />
+      <stop offset="100%" stop-color="#059669" />
+    </linearGradient>
+    
+    <!-- Shield/Globe Glow -->
+    <linearGradient id="glowGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#34D399" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#059669" stop-opacity="0.2"/>
+    </linearGradient>
+  </defs>
+
+  <!-- ICON CONTAINER (Modern Rounded App Icon Look) -->
+  <rect x="10" y="10" width="100" height="100" rx="28" fill="url(#iconGradient)"/>
+  
+  <!-- Outer Tech Globe / Orbit Lines -->
+  <circle cx="60" cy="60" r="36" fill="none" stroke="#FFFFFF" stroke-opacity="0.25" stroke-width="2" stroke-dasharray="4 3"/>
+  
+  <!-- Shield & Growth Chart Icon (Combining Wealth & Analytics) -->
+  <path d="M60 28 L80 38 V56 C80 70 60 82 60 82 C60 82 40 70 40 56 V38 L60 28 Z" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round"/>
+  
+  <!-- Growth Bars inside Shield -->
+  <rect x="50" y="58" width="5" height="12" rx="2.5" fill="#FFFFFF"/>
+  <rect x="58" y="52" width="5" height="18" rx="2.5" fill="#FFFFFF"/>
+  <rect x="66" y="44" width="5" height="26" rx="2.5" fill="#34D399"/>
+  
+  <!-- Trending Arrow -->
+  <path d="M48 54 L58 46 L64 50 L72 40" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M68 40 H72 V44" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- BRAND NAME TEXT -->
+  <text x="130" y="70" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="800" font-size="42" fill="#FFFFFF" letter-spacing="-0.5">
+    Budget<tspan fill="#34D399">Pro</tspan>
+  </text>
+  
+  <!-- SUBTITLE TEXT -->
+  <text x="132" y="94" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="600" font-size="16" fill="#9CA3AF" letter-spacing="2">
+    FINANCIAL SUITE
+  </text>
+</svg>

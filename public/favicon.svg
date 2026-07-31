@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
+  <defs>
+    <linearGradient id="favGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10B981" />
+      <stop offset="100%" stop-color="#059669" />
+    </linearGradient>
+  </defs>
+
+  <!-- App Rounded Card Base -->
+  <rect x="0" y="0" width="100" height="100" rx="26" fill="url(#favGradient)"/>
+  
+  <!-- Outer Orbit Circle -->
+  <circle cx="50" cy="50" r="34" fill="none" stroke="#FFFFFF" stroke-opacity="0.3" stroke-width="2.5" stroke-dasharray="4 3"/>
+  
+  <!-- Shield Outline -->
+  <path d="M50 20 L70 30 V48 C70 62 50 74 50 74 C50 74 30 62 30 48 V30 L50 20 Z" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linejoin="round"/>
+  
+  <!-- Growth Bars -->
+  <rect x="40" y="50" width="5" height="12" rx="2" fill="#FFFFFF"/>
+  <rect x="48" y="44" width="5" height="18" rx="2" fill="#FFFFFF"/>
+  <rect x="56" y="36" width="5" height="26" rx="2" fill="#34D399"/>
+  
+  <!-- Arrow -->
+  <path d="M38 46 L48 38 L54 42 L62 32" fill="none" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
