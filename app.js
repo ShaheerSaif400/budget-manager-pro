@@ -143,14 +143,20 @@ app.get('/dashboard', isAuth, async (req, res) => {
 });
 
 // 1. DELETE TRANSACTION ROUTE
-// DELETE TRANSACTION ROUTE (Fixed Version)
+// SECURE DELETE TRANSACTION ROUTE
 app.post('/expense/delete/:id', async (req, res) => {
   try {
     const expenseId = req.params.id;
-    
-    const deletedExpense = await Expense.findByIdAndDelete(expenseId);
 
+    // Security Match: Ensured that user can only delete their own transaction
+    const deletedExpense = await Expense.findOneAndDelete({
+      _id: expenseId,
+      userId: req.session.user._id
+    });
 
+    if (!deletedExpense) {
+      return res.status(403).send("Unauthorized action or item not found.");
+    }
 
     res.redirect('/dashboard');
   } catch (err) {
@@ -159,22 +165,20 @@ app.post('/expense/delete/:id', async (req, res) => {
   }
 });
 
-// 2. EDIT / UPDATE TRANSACTION ROUTE
-// EDIT TRANSACTION ROUTE 
+// SECURE EDIT TRANSACTION ROUTE
 app.post('/expense/edit/:id', async (req, res) => {
   try {
     const expenseId = req.params.id;
     const { title, amount, category, type, date } = req.body;
 
-    // Type Casing Formatting
     let formattedType = 'Expense';
     if (type && typeof type === 'string') {
       formattedType = type.charAt(0).toUpperCase() + type.slice(1).toLowerCase();
     }
 
-
-    const updatedExpense = await Expense.findByIdAndUpdate(
-      expenseId,
+    // Security Match: Ensured that transaction belongs to active logged-in user
+    const updatedExpense = await Expense.findOneAndUpdate(
+      { _id: expenseId, userId: req.session.user._id },
       {
         title,
         amount: Number(amount) || 0,
@@ -182,15 +186,18 @@ app.post('/expense/edit/:id', async (req, res) => {
         type: formattedType,
         date: date ? new Date(date) : new Date()
       },
-      { new: true } 
+      { new: true }
     );
 
-
+    if (!updatedExpense) {
+      console.warn("Unauthorized attempt or transaction not found.");
+      return res.status(403).send("Unauthorized action or item not found.");
+    }
 
     res.redirect('/dashboard');
   } catch (err) {
     console.error("Edit Error:", err);
-    res.status(500).send("Error updating expense: " + err.message);
+    res.status(500).send("Error updating transaction");
   }
 });
 // 3. Financial Blog Page
@@ -224,7 +231,8 @@ app.get('/signup', (req, res) => {
   res.render('signup', { user: req.session.user });
 });
 
-app.post('/signup', async (req, res) => {
+// Post route with multer middleware added
+app.post('/signup', upload.single('avatar'), async (req, res) => {
   try {
     const { name, email, password } = req.body;
     let user = await User.findOne({ email });
@@ -233,10 +241,22 @@ app.post('/signup', async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const passHash = await bcrypt.hash(password, salt);
 
-    await User.create({ name, email, password: passHash });
+    let avatarPath = '';
+    if (req.file) {
+      avatarPath = '/uploads/' + req.file.filename;
+    }
+
+    await User.create({ 
+      name, 
+      email, 
+      password: passHash,
+      avatar: avatarPath 
+    });
+    
     res.redirect('/login');
   } catch (err) {
-    res.status(500).send('Signup Error');
+    console.error("Signup Error Detailed:", err);
+    res.status(500).send('Signup Error: ' + err.message);
   }
 });
 
@@ -268,21 +288,34 @@ app.post('/add-expense', isAuth, async (req, res) => {
   }
 });
 // 6. Analytics Page
+// 6. Analytics Page (FIXED)
 app.get('/analytics', isAuth, async (req, res) => {
   try {
-    const allData = await Expense.find();
-    res.render('analytics', { expenses: allData, user: req.session.user });
+    const userId = req.session.user._id;
+    // Sirf logged-in user ki transactions fetch karein
+    const userExpenses = await Expense.find({
+      $or: [{ userId: userId }, { userId: userId.toString() }]
+    });
+
+    res.render('analytics', { expenses: userExpenses, user: req.session.user });
   } catch (err) {
+    console.error("Analytics Fetch Error:", err);
     res.status(500).send('Analytics page load error');
   }
 });
 
-// 7. Profile View Route
+// 7. Profile View Route (FIXED)
 app.get('/profile', isAuth, async (req, res) => {
   try {
-    const allData = await Expense.find();
-    res.render('profile', { expenses: allData, user: req.session.user });
+    const userId = req.session.user._id;
+    // Sirf logged-in user ki transactions fetch karein
+    const userExpenses = await Expense.find({
+      $or: [{ userId: userId }, { userId: userId.toString() }]
+    });
+
+    res.render('profile', { expenses: userExpenses, user: req.session.user });
   } catch (err) {
+    console.error("Profile Fetch Error:", err);
     res.status(500).send('Profile Error');
   }
 });
