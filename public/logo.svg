@@ -37,7 +37,7 @@
   </text>
   
   <!-- SUBTITLE TEXT -->
-  <text x="132" y="94" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="600" font-size="16" fill="#9CA3AF" letter-spacing="2">
+  <text x="132" y="100" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="600" font-size="26" fill="#9CA3AF" letter-spacing="2">
     FINANCIAL SUITE
   </text>
 </svg>
