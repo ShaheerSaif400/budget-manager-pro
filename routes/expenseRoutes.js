@@ -22,4 +22,8 @@ router.post('/expense/delete/:id', isAuth, expenseController.deleteExpense);
 router.get('/analytics', isAuth, expenseController.getAnalytics);
 router.get('/profile', isAuth, expenseController.getProfile);
 
+// Budget Management Routes
+router.post('/budget/set', isAuth, expenseController.setBudget);
+router.post('/budget/delete/:id', isAuth, expenseController.deleteBudget);
+
 module.exports = router;

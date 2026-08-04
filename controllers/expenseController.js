@@ -1,5 +1,6 @@
 const Expense = require('../models/Expense');
 const User = require('../models/User');
+const Budget = require('../models/Budget');
 
 // GET: Dashboard Page with Search, Pagination & Category Calculation
 exports.getDashboard = async (req, res) => {
@@ -10,7 +11,11 @@ exports.getDashboard = async (req, res) => {
 
     const userId = req.session.user._id;
 
-    // Fetch all user expenses for totals/chart calculations
+    // Current Month Filter string format "YYYY-MM"
+    const now = new Date();
+    const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+    // Fetch All User Expenses
     const allUserExpenses = await Expense.find({
       $or: [{ userId: userId }, { userId: userId.toString() }]
     });
@@ -31,6 +36,25 @@ exports.getDashboard = async (req, res) => {
         const categoryKey = exp.category || 'Other';
         categoryTotals[categoryKey] = (categoryTotals[categoryKey] || 0) + amt;
       }
+    });
+
+    // Fetch Current Month Budgets
+    const userBudgets = await Budget.find({ userId, month: currentMonthStr });
+
+    // Calculate Spent vs Budget for warnings
+    const budgetOverview = userBudgets.map(b => {
+      const spent = categoryTotals[b.category] || 0;
+      const percentage = Math.min(Math.round((spent / b.monthlyLimit) * 100), 100);
+      const isOver = spent > b.monthlyLimit;
+
+      return {
+        _id: b._id,
+        category: b.category,
+        monthlyLimit: b.monthlyLimit,
+        spent,
+        percentage,
+        isOver
+      };
     });
 
     // Filtering & Pagination Query
@@ -57,7 +81,8 @@ exports.getDashboard = async (req, res) => {
       query: req.query,
       totalIncome,
       totalExpense,
-      categoryChartData: JSON.stringify(categoryTotals)
+      categoryChartData: JSON.stringify(categoryTotals),
+      budgets: budgetOverview // Naya budget status data pass ho raha hai
     });
 
   } catch (err) {
@@ -65,7 +90,6 @@ exports.getDashboard = async (req, res) => {
     res.status(500).send("Server Error loading dashboard");
   }
 };
-
 // POST: Add New Expense / Income
 exports.addExpense = async (req, res) => {
   try {
@@ -198,5 +222,43 @@ exports.updateProfile = async (req, res) => {
   } catch (err) {
     console.error("Profile Update Error:", err);
     res.status(500).send('Profile update error');
+  }
+};
+
+
+
+// POST: Set or Update Monthly Budget for a Category
+exports.setBudget = async (req, res) => {
+  try {
+    const { category, monthlyLimit } = req.body;
+    const userId = req.session.user._id;
+
+    // Current Month string format "YYYY-MM"
+    const now = new Date();
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+    // Update if budget exists for this month & category, else create
+    await Budget.findOneAndUpdate(
+      { userId, category, month: currentMonth },
+      { monthlyLimit: Number(monthlyLimit) },
+      { upsert: true, new: true }
+    );
+
+    res.redirect('/dashboard');
+  } catch (err) {
+    console.error("Set Budget Error:", err);
+    res.status(500).send("Error saving budget");
+  }
+};
+
+// POST: Delete Budget
+exports.deleteBudget = async (req, res) => {
+  try {
+    const budgetId = req.params.id;
+    await Budget.findOneAndDelete({ _id: budgetId, userId: req.session.user._id });
+    res.redirect('/dashboard');
+  } catch (err) {
+    console.error("Delete Budget Error:", err);
+    res.status(500).send("Error deleting budget");
   }
 };
