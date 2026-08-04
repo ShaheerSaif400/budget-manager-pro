@@ -1,0 +1,40 @@
+<%- include('partials/header') %>
+
+<div class="bg-light py-4 border-bottom">
+  <div class="container">
+    <a href="/blogs" class="btn btn-outline-secondary btn-sm rounded-pill mb-3">
+      <i class="bi bi-arrow-left me-1"></i> Back to Articles
+    </a>
+    <div>
+      <span class="badge bg-<%= blog.badgeColor %> px-3 py-2 rounded-pill mb-2"><%= blog.category %></span>
+      <h1 class="fw-bold text-dark display-6"><%= blog.title %></h1>
+      <div class="text-muted small d-flex gap-3 align-items-center mt-2">
+        <span><i class="bi bi-clock me-1"></i> <%= blog.readTime %></span>
+        <span>•</span>
+        <span><i class="bi bi-calendar3 me-1"></i> <%= blog.date %></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <img src="<%= blog.image %>" class="img-fluid rounded-4 shadow-sm mb-4 w-100" style="max-height: 400px; object-fit: cover;" alt="<%= blog.title %>">
+      
+      <div class="blog-content leading-relaxed fs-5 text-secondary">
+        <%- blog.content %>
+      </div>
+
+      <hr class="my-5">
+
+      <div class="d-flex justify-content-between align-items-center">
+        <a href="/blogs" class="btn btn-success rounded-pill px-4">
+          <i class="bi bi-journal-text me-2"></i> Explore More Articles
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

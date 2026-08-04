@@ -14,19 +14,15 @@ const app = express();
 
 // Database Connection
 connectDB();
-// MongoDB Connect hone ke baad chalayein (Single time Migration)
-// app.js mein connectDB(); ke niche paste karein:
+
 mongoose.connection.once('open', async () => {
   try {
-    // First existing user fetch karein
     const user = await mongoose.model('User').findOne();
     if (user) {
-      // Un tamaam records mein jahan userId null/undefined hai, unhe current user se connect kar do
-      const result = await Expense.updateMany(
+      await Expense.updateMany(
         { $or: [{ userId: { $exists: false } }, { userId: null }] },
         { $set: { userId: user._id } }
       );
-
     }
   } catch (err) {
     console.error("Migration Error:", err);
@@ -41,7 +37,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
-// Multer Storage Configuration (File Uploads Ke Liye)
+// Multer Storage Configuration
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, 'public/uploads/');
@@ -76,17 +72,15 @@ app.get('/', (req, res) => {
   res.render('landing', { user: req.session.user || null });
 });
 
-// 2. DASHBOARD PAGE WITH SEARCH, FILTERING & PAGINATION (home.ejs)
+// 2. DASHBOARD PAGE
 app.get('/dashboard', isAuth, async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = 5;
     const skip = (page - 1) * limit;
 
-    // Direct String / ObjectId double compatibility
     const userId = req.session.user._id;
 
-    // Fetch user transactions matching userId
     const allUserExpenses = await Expense.find({ 
       $or: [{ userId: userId }, { userId: userId.toString() }] 
     });
@@ -109,7 +103,6 @@ app.get('/dashboard', isAuth, async (req, res) => {
       }
     });
 
-    // Pagination query
     let filter = { $or: [{ userId: userId }, { userId: userId.toString() }] };
 
     if (req.query.search) {
@@ -142,13 +135,10 @@ app.get('/dashboard', isAuth, async (req, res) => {
   }
 });
 
-// 1. DELETE TRANSACTION ROUTE
-// SECURE DELETE TRANSACTION ROUTE
+// DELETE TRANSACTION ROUTE
 app.post('/expense/delete/:id', async (req, res) => {
   try {
     const expenseId = req.params.id;
-
-    // Security Match: Ensured that user can only delete their own transaction
     const deletedExpense = await Expense.findOneAndDelete({
       _id: expenseId,
       userId: req.session.user._id
@@ -165,7 +155,7 @@ app.post('/expense/delete/:id', async (req, res) => {
   }
 });
 
-// SECURE EDIT TRANSACTION ROUTE
+// EDIT TRANSACTION ROUTE
 app.post('/expense/edit/:id', async (req, res) => {
   try {
     const expenseId = req.params.id;
@@ -176,7 +166,6 @@ app.post('/expense/edit/:id', async (req, res) => {
       formattedType = type.charAt(0).toUpperCase() + type.slice(1).toLowerCase();
     }
 
-    // Security Match: Ensured that transaction belongs to active logged-in user
     const updatedExpense = await Expense.findOneAndUpdate(
       { _id: expenseId, userId: req.session.user._id },
       {
@@ -190,7 +179,6 @@ app.post('/expense/edit/:id', async (req, res) => {
     );
 
     if (!updatedExpense) {
-      console.warn("Unauthorized attempt or transaction not found.");
       return res.status(403).send("Unauthorized action or item not found.");
     }
 
@@ -200,14 +188,92 @@ app.post('/expense/edit/:id', async (req, res) => {
     res.status(500).send("Error updating transaction");
   }
 });
-// 3. Financial Blog Page
+
+// ================= BLOG SYSTEM ROUTES =================
+
+const blogPosts = [
+  {
+    id: '1',
+    title: 'The 50/30/20 Rule for Personal Finance',
+    category: 'Budgeting',
+    badgeColor: 'success',
+    readTime: '5 min read',
+    date: 'Jul 2026',
+    image: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=600&q=80',
+    summary: 'Learn how allocating 50% for needs, 30% for wants, and 20% for savings can transform your monthly budget balance.',
+    content: `
+      <p class="mb-4">Managing money effectively doesn't require a degree in finance. One of the simplest and most effective frameworks is the <strong>50/30/20 budget rule</strong>.</p>
+      <h3 class="fw-bold text-dark mt-4 mb-3">1. 50% for Needs</h3>
+      <p class="mb-4">Needs are expenses you cannot avoid. These include housing, utilities, groceries, transportation, and basic insurance. Exactly half of your after-tax income should cover these core essentials.</p>
+      <h3 class="fw-bold text-dark mt-4 mb-3">2. 30% for Wants</h3>
+      <p class="mb-4">Wants are items that aren't strictly necessary for survival but enhance your lifestyle—dining out, entertainment, hobbies, and vacation travel. Budgeting 30% allows you to enjoy life without financial guilt.</p>
+      <h3 class="fw-bold text-dark mt-4 mb-3">3. 20% for Savings & Debt Repayment</h3>
+      <p class="mb-4">The final 20% goes directly toward your future. Put this portion into emergency reserves, retirement accounts, or paying down high-interest debt.</p>
+    `
+  },
+  {
+    id: '2',
+    title: '10 Simple Ways to Cut Monthly Expenses',
+    category: 'Savings',
+    badgeColor: 'primary',
+    readTime: '4 min read',
+    date: 'Jul 2026',
+    image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=600&q=80',
+    summary: 'Identify hidden cash leaks and unnecessary subscription charges to save more money every single month.',
+    content: `
+      <p class="mb-4">Small daily leaks can add up to a major drain on your finances. Cutting monthly expenses doesn't mean sacrificing your lifestyle entirely.</p>
+      <h3 class="fw-bold text-dark mt-4 mb-3">Audit Unused Subscriptions</h3>
+      <p class="mb-4">Review your bank statements for recurring subscriptions. Cancel streaming services, app memberships, or gym plans you rarely use.</p>
+      <h3 class="fw-bold text-dark mt-4 mb-3">Cook at Home & Plan Meals</h3>
+      <p class="mb-4">Dining out or ordering food delivery frequently is one of the quickest ways to blow a budget. Planning weekly meals drastically cuts down food costs.</p>
+    `
+  },
+  {
+    id: '3',
+    title: 'Emergency Funds vs. Investments',
+    category: 'Investing',
+    badgeColor: 'warning',
+    readTime: '6 min read',
+    date: 'Jul 2026',
+    image: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=600&q=80',
+    summary: 'Why building a 3-month liquid cash reserve is required before jumping into stocks or crypto investments.',
+    content: `
+      <p class="mb-4">Before putting your hard-earned money into stock markets, real estate, or crypto, having a solid financial foundation is critical.</p>
+      <h3 class="fw-bold text-dark mt-4 mb-3">Why an Emergency Fund Comes First</h3>
+      <p class="mb-4">An emergency fund acts as financial insurance. It covers unexpected medical bills, car repairs, or sudden income loss without forcing you to sell investments at a loss.</p>
+      <h3 class="fw-bold text-dark mt-4 mb-3">Transitioning to Long-Term Investments</h3>
+      <p class="mb-4">Once you have 3 to 6 months of living expenses safely stored in an accessible savings account, you can confidently invest excess capital into growth assets.</p>
+    `
+  }
+];
+
+// GET: All Blogs Route
 app.get('/blogs', (req, res) => {
-  res.render('blogs', { user: req.session.user });
+  res.render('blogs', { 
+    blogs: blogPosts, 
+    user: req.session.user || null 
+  });
 });
 
-// 4. Authentication Routes
+// GET: Single Blog Detail Route
+app.get('/blogs/:id', (req, res) => {
+  const blogId = req.params.id;
+  const blog = blogPosts.find(b => b.id === blogId);
+
+  if (!blog) {
+    return res.status(404).send('Blog article not found.');
+  }
+
+  res.render('blog-detail', { 
+    blog, 
+    user: req.session.user || null 
+  });
+});
+
+// ================= AUTHENTICATION & OTHER ROUTES =================
+
 app.get('/login', (req, res) => {
-  res.render('login', { user: req.session.user });
+  res.render('login', { user: req.session.user || null });
 });
 
 app.post('/login', async (req, res) => {
@@ -228,10 +294,9 @@ app.post('/login', async (req, res) => {
 });
 
 app.get('/signup', (req, res) => {
-  res.render('signup', { user: req.session.user });
+  res.render('signup', { user: req.session.user || null });
 });
 
-// Post route with multer middleware added
 app.post('/signup', upload.single('avatar'), async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -260,18 +325,14 @@ app.post('/signup', upload.single('avatar'), async (req, res) => {
   }
 });
 
-// 5. Expense Transactions Route (POST ONLY)
-// 5. Save Transaction Route
 app.post('/add-expense', isAuth, async (req, res) => {
   try {
     let { type, title, amount, category } = req.body;
 
-    // Capitalize type to match Mongoose schema ('Expense' / 'Income')
     if (type) {
       type = type.charAt(0).toUpperCase() + type.slice(1).toLowerCase();
     }
 
-    // Save transaction with active User ID attached
     await Expense.create({
       userId: req.session.user._id,
       type: type || 'Expense',
@@ -284,15 +345,13 @@ app.post('/add-expense', isAuth, async (req, res) => {
     res.redirect('/dashboard');
   } catch (err) {
     console.error("Save Expense Error:", err);
-    res.redirect('/dashboard'); // Error aaye tab bhi dashboard par wapas chala jaye
+    res.redirect('/dashboard');
   }
 });
-// 6. Analytics Page
-// 6. Analytics Page (FIXED)
+
 app.get('/analytics', isAuth, async (req, res) => {
   try {
     const userId = req.session.user._id;
-    // Sirf logged-in user ki transactions fetch karein
     const userExpenses = await Expense.find({
       $or: [{ userId: userId }, { userId: userId.toString() }]
     });
@@ -304,11 +363,9 @@ app.get('/analytics', isAuth, async (req, res) => {
   }
 });
 
-// 7. Profile View Route (FIXED)
 app.get('/profile', isAuth, async (req, res) => {
   try {
     const userId = req.session.user._id;
-    // Sirf logged-in user ki transactions fetch karein
     const userExpenses = await Expense.find({
       $or: [{ userId: userId }, { userId: userId.toString() }]
     });
@@ -320,7 +377,6 @@ app.get('/profile', isAuth, async (req, res) => {
   }
 });
 
-// 8. Profile Update Route
 app.post('/profile/update', isAuth, upload.single('avatarFile'), async (req, res) => {
   try {
     const { name, email, avatarUrl } = req.body;
@@ -347,14 +403,12 @@ app.post('/profile/update', isAuth, upload.single('avatarFile'), async (req, res
   }
 });
 
-// 9. Logout Route
 app.get('/logout', (req, res) => {
   req.session.destroy(() => {
     res.redirect('/');
   });
 });
 
-// Server Start
 app.listen(3000, () => {
   console.log('Server is running on http://localhost:3000');
 });
