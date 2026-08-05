@@ -91,12 +91,18 @@ exports.getDashboard = async (req, res) => {
   }
 };
 // POST: Add New Expense / Income
+// POST: Add New Expense / Income
 exports.addExpense = async (req, res) => {
   try {
-    let { type, title, amount, category } = req.body;
+    let { type, title, amount, category, customCategory } = req.body;
 
     if (type) {
       type = type.charAt(0).toUpperCase() + type.slice(1).toLowerCase();
+    }
+
+    // Agar category 'Other' hai aur customCategory input mein value di gayi hai
+    if (category === 'Other' && customCategory && customCategory.trim() !== '') {
+      category = customCategory.trim();
     }
 
     await Expense.create({
@@ -115,37 +121,29 @@ exports.addExpense = async (req, res) => {
   }
 };
 
-// POST: Edit Existing Transaction
+// POST: Edit / Update Expense
 exports.editExpense = async (req, res) => {
   try {
-    const expenseId = req.params.id;
-    const { title, amount, category, type, date } = req.body;
+    const { id } = req.params;
+    let { title, amount, type, category, customCategory, date } = req.body;
 
-    let formattedType = 'Expense';
-    if (type && typeof type === 'string') {
-      formattedType = type.charAt(0).toUpperCase() + type.slice(1).toLowerCase();
+    // Agar category 'Other' chuni hai aur custom name diya hai
+    if (category === 'Other' && customCategory && customCategory.trim() !== '') {
+      category = customCategory.trim();
     }
 
-    const updatedExpense = await Expense.findOneAndUpdate(
-      { _id: expenseId, userId: req.session.user._id },
-      {
-        title,
-        amount: Number(amount) || 0,
-        category,
-        type: formattedType,
-        date: date ? new Date(date) : new Date()
-      },
-      { new: true }
-    );
-
-    if (!updatedExpense) {
-      return res.status(403).send("Unauthorized action or item not found.");
-    }
+    await Expense.findByIdAndUpdate(id, {
+      title,
+      amount: Number(amount) || 0,
+      type,
+      category,
+      date: date ? new Date(date) : new Date()
+    });
 
     res.redirect('/dashboard');
   } catch (err) {
-    console.error("Edit Error:", err);
-    res.status(500).send("Error updating transaction");
+    console.error("Edit Expense Error:", err);
+    res.redirect('/dashboard');
   }
 };
 
@@ -228,10 +226,16 @@ exports.updateProfile = async (req, res) => {
 
 
 // POST: Set or Update Monthly Budget for a Category
+// POST: Set or Update Monthly Budget for a Category
 exports.setBudget = async (req, res) => {
   try {
-    const { category, monthlyLimit } = req.body;
+    let { category, customCategory, monthlyLimit } = req.body;
     const userId = req.session.user._id;
+
+    // Agar category 'Other' select hui hai toh custom category use karein
+    if (category === 'Other' && customCategory && customCategory.trim() !== '') {
+      category = customCategory.trim();
+    }
 
     // Current Month string format "YYYY-MM"
     const now = new Date();
