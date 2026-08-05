@@ -1,38 +1,127 @@
 <%- include('partials/header') %>
 
 <!-- HERO SECTION -->
-<section class="py-5 bg-light position-relative overflow-hidden" style="border-bottom: 1px solid #e2e8f0;">
-  <div class="container py-4">
+<section class="position-relative overflow-hidden py-5 my-3">
+  <!-- Soft Background Glow Accent -->
+  <div class="position-absolute top-0 start-50 translate-middle-x rounded-circle opacity-25 blur-3xl" 
+       style="width: 500px; height: 500px; background: radial-gradient(circle, rgba(16,185,129,0.4) 0%, rgba(255,255,255,0) 70%); pointer-events: none; filter: blur(60px);">
+  </div>
+
+  <div class="container position-relative z-1 py-4">
     <div class="row align-items-center g-5">
-      <div class="col-lg-6">
-        <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill fw-semibold mb-3">
-          <i class="bi bi-shield-check me-1"></i> Smart Wealth Management
-        </span>
-        <h1 class="display-4 fw-extrabold text-dark mb-3" style="line-height: 1.2;">
-          Master Your Money with <span class="text-success">BudgetPro</span>
+      
+      <!-- Left Column: Copywriting & CTAs -->
+      <div class="col-lg-6 text-start">
+        <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill bg-success bg-opacity-10 border border-success border-opacity-25 text-success fw-semibold mb-3 small">
+          <i class="bi bi-shield-check"></i> Smart Wealth Management 2.0
+        </div>
+        
+        <h1 class="display-4 fw-bold text-dark lh-sm mb-3">
+          Master Your Money with <span class="text-success text-gradient" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">BudgetPro</span>
         </h1>
-        <p class="lead text-muted mb-4">
+        
+        <p class="lead text-secondary mb-4 fs-5 fw-normal me-lg-4">
           Take total control of your personal finances. Track spending in real-time, generate dynamic reports, and achieve your financial goals effortlessly.
         </p>
-        <div class="d-flex flex-wrap gap-3">
-          <% if (typeof user !== 'undefined' && user) { %>
-            <a href="/dashboard" class="btn btn-warning btn-lg fw-bold px-4 py-3 shadow-sm text-dark" style="border-radius: 12px; background-color: #f59e0b; border: none;">
-              <i class="bi bi-speedometer2 me-2"></i> Go to Dashboard
-            </a>
-            <a href="/profile" class="btn btn-outline-dark btn-lg fw-semibold px-4 py-3" style="border-radius: 12px;">
-              <i class="bi bi-person-circle me-2"></i> My Profile
-            </a>
-          <% } else { %>
-            <a href="/signup" class="btn btn-success btn-lg fw-bold px-4 py-3 shadow-sm" style="border-radius: 12px; background-color: #10b981; border: none;">
-              Get Started Free <i class="bi bi-arrow-right ms-2"></i>
-            </a>
-            <a href="/login" class="btn btn-outline-dark btn-lg fw-semibold px-4 py-3" style="border-radius: 12px;">
-              Sign In
-            </a>
-          <% } %>
+
+        <div class="d-flex flex-wrap gap-3 align-items-center mb-4">
+          <a href="/register" class="btn btn-success btn-lg px-4 py-3 rounded-3 shadow-sm fw-semibold d-inline-flex align-items-center gap-2">
+            Get Started Free <i class="bi bi-arrow-right"></i>
+          </a>
+          <a href="/login" class="btn btn-outline-secondary btn-lg px-4 py-3 rounded-3 fw-semibold">
+            Sign In
+          </a>
+        </div>
+
+        <!-- Micro Social Proof -->
+        <div class="d-flex align-items-center gap-3 pt-2 text-muted small">
+          <div class="d-flex gap-1 text-warning">
+            <i class="bi bi-star-fill"></i>
+            <i class="bi bi-star-fill"></i>
+            <i class="bi bi-star-fill"></i>
+            <i class="bi bi-star-fill"></i>
+            <i class="bi bi-star-fill"></i>
+          </div>
+          <span>Trusted by <strong>1,000+</strong> active budgeters</span>
         </div>
       </div>
 
+      <!-- Right Column: Mockup Card with Floating Badges -->
+      <div class="col-lg-6 position-relative">
+        
+        <!-- Floating Badge 1: Top Left -->
+        <div class="position-absolute top-0 start-0 translate-middle-y bg-white shadow-lg rounded-3 p-2 px-3 d-flex align-items-center gap-2 border border-light z-3 d-none d-sm-flex ms-n3" style="animation: float 4s ease-in-out infinite;">
+          <div class="bg-success text-white rounded-circle p-2 d-flex align-items-center justify-content-center" style="width:32px; height:32px;">
+            <i class="bi bi-graph-up-arrow small"></i>
+          </div>
+          <div>
+            <div class="text-muted extra-small" style="font-size: 10px;">Monthly Savings</div>
+            <div class="fw-bold text-dark small">+ 24.5%</div>
+          </div>
+        </div>
+
+        <!-- Floating Badge 2: Bottom Right -->
+        <div class="position-absolute bottom-0 end-0 translate-middle-y bg-white shadow-lg rounded-3 p-2 px-3 d-flex align-items-center gap-2 border border-light z-3 d-none d-sm-flex me-n2" style="animation: float 5s ease-in-out infinite 1s;">
+          <div class="bg-primary text-white rounded-circle p-2 d-flex align-items-center justify-content-center" style="width:32px; height:32px;">
+            <i class="bi bi-shield-lock small"></i>
+          </div>
+          <div>
+            <div class="text-muted extra-small" style="font-size: 10px;">Security</div>
+            <div class="fw-bold text-dark small">Encrypted Data</div>
+          </div>
+        </div>
+
+        <!-- Main Interactive Live Preview Card -->
+        <div class="card border-0 shadow-lg rounded-4 p-4 bg-white position-relative overflow-hidden">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="d-flex align-items-center gap-2">
+              <span class="spinner-grow spinner-grow-sm text-success" role="status"></span>
+              <span class="fw-bold text-dark">Live Preview Analytics</span>
+            </div>
+            <span class="badge bg-light text-secondary border px-2 py-1">Realtime Sync</span>
+          </div>
+
+          <!-- Income vs Expense Grid Cards -->
+          <div class="row g-3 mb-4">
+            <div class="col-6">
+              <div class="p-3 rounded-3 bg-success bg-opacity-10 border border-success border-opacity-25">
+                <div class="text-success small fw-semibold mb-1">Income Flow</div>
+                <div class="fs-5 fw-bold text-dark">+ Rs. 125,000</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="p-3 rounded-3 bg-danger bg-opacity-10 border border-danger border-opacity-25">
+                <div class="text-danger small fw-semibold mb-1">Expenses</div>
+                <div class="fs-5 fw-bold text-dark">- Rs. 42,300</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Progress Bar Section -->
+          <div class="p-3 bg-light rounded-3">
+            <div class="d-flex justify-content-between text-muted small mb-2 fw-semibold">
+              <span>Savings Goal Progress</span>
+              <span class="text-success fw-bold">66%</span>
+            </div>
+            <div class="progress" style="height: 10px;">
+              <div class="progress-bar bg-success rounded-pill" role="progressbar" style="width: 66%"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- CSS Animation Keyframes (Head tag ya custom stylesheet mein add karein) -->
+<style>
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+</style>
       <!-- INTERACTIVE PREVIEW CARD -->
       <div class="col-lg-6">
         <div class="card border-0 shadow-lg p-4 position-relative" style="border-radius: 24px; background: #ffffff;">
