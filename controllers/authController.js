@@ -68,7 +68,7 @@ exports.getLogin = (req, res) => {
   res.render('login', { user: req.session.user || null });
 };
 
-// POST: Login Handle
+
 // POST: Login Handle
 exports.postLogin = async (req, res) => {
   try {
@@ -94,6 +94,8 @@ exports.postLogin = async (req, res) => {
 
     req.session.user = checkUser;
     
+    req.flash('success_msg', `Welcome back, ${checkUser.name || 'User'}!`);
+
     req.session.save((err) => {
       if (err) {
         console.error("Session Save Error:", err);
@@ -109,7 +111,6 @@ exports.postLogin = async (req, res) => {
     res.redirect('/login');
   }
 };
-
 // GET: Signup Page
 exports.getSignup = (req, res) => {
   res.render('signup', { user: req.session.user || null });

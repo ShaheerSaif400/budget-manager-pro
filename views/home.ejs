@@ -5,10 +5,15 @@
 
 <div class="container py-4">
   <!-- Flash Messages for Success or Error Notifications -->
-  <% if (typeof success_msg !== 'undefined' && success_msg) { %>
+<% 
+  let msgToShow = (typeof success_msg !== 'undefined' && success_msg && success_msg.length > 0) ? success_msg : null;
+  if (Array.isArray(msgToShow)) { msgToShow = msgToShow[0]; }
+%>
+
+<% if (msgToShow && String(msgToShow).trim() !== '') { %>
   <div id="flash-alert" class="alert alert-success alert-dismissible fade show shadow-sm mb-4" role="alert">
     <i class="bi bi-check-circle-fill me-2"></i>
-    <%= success_msg %>
+    <%= msgToShow %>
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
   </div>
   <script>

@@ -3,6 +3,7 @@ const User = require('../models/User');
 const Budget = require('../models/Budget');
 
 // GET: Dashboard Page with Search, Pagination & Category Calculation
+// GET: Dashboard Page
 exports.getDashboard = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -68,6 +69,7 @@ exports.getDashboard = async (req, res) => {
       .skip(skip)
       .limit(limit);
 
+    // Render Clean Object (success_msg manually pass nahi karna, res.locals khud handle karega)
     res.render('home', {
       user: req.session.user,
       expenses,
