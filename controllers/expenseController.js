@@ -11,11 +11,9 @@ exports.getDashboard = async (req, res) => {
 
     const userId = req.session.user._id;
 
-    // Current Month Filter string format "YYYY-MM"
     const now = new Date();
     const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
-    // Fetch All User Expenses
     const allUserExpenses = await Expense.find({
       $or: [{ userId: userId }, { userId: userId.toString() }]
     });
@@ -38,10 +36,8 @@ exports.getDashboard = async (req, res) => {
       }
     });
 
-    // Fetch Current Month Budgets
     const userBudgets = await Budget.find({ userId, month: currentMonthStr });
 
-    // Calculate Spent vs Budget for warnings
     const budgetOverview = userBudgets.map(b => {
       const spent = categoryTotals[b.category] || 0;
       const percentage = Math.min(Math.round((spent / b.monthlyLimit) * 100), 100);
@@ -57,7 +53,6 @@ exports.getDashboard = async (req, res) => {
       };
     });
 
-    // Filtering & Pagination Query
     let filter = { $or: [{ userId: userId }, { userId: userId.toString() }] };
 
     if (req.query.search) {
@@ -82,7 +77,7 @@ exports.getDashboard = async (req, res) => {
       totalIncome,
       totalExpense,
       categoryChartData: JSON.stringify(categoryTotals),
-      budgets: budgetOverview // Naya budget status data pass ho raha hai
+      budgets: budgetOverview
     });
 
   } catch (err) {
@@ -90,7 +85,7 @@ exports.getDashboard = async (req, res) => {
     res.status(500).send("Server Error loading dashboard");
   }
 };
-// POST: Add New Expense / Income
+
 // POST: Add New Expense / Income
 exports.addExpense = async (req, res) => {
   try {
@@ -100,7 +95,6 @@ exports.addExpense = async (req, res) => {
       type = type.charAt(0).toUpperCase() + type.slice(1).toLowerCase();
     }
 
-    // Agar category 'Other' hai aur customCategory input mein value di gayi hai
     if (category === 'Other' && customCategory && customCategory.trim() !== '') {
       category = customCategory.trim();
     }
@@ -114,9 +108,11 @@ exports.addExpense = async (req, res) => {
       date: new Date()
     });
 
+    req.flash('success_msg', 'Transaction added successfully');
     res.redirect('/dashboard');
   } catch (err) {
     console.error("Save Expense Error:", err);
+    req.flash('error_msg', 'Failed to add transaction');
     res.redirect('/dashboard');
   }
 };
@@ -127,7 +123,6 @@ exports.editExpense = async (req, res) => {
     const { id } = req.params;
     let { title, amount, type, category, customCategory, date } = req.body;
 
-    // Agar category 'Other' chuni hai aur custom name diya hai
     if (category === 'Other' && customCategory && customCategory.trim() !== '') {
       category = customCategory.trim();
     }
@@ -140,9 +135,11 @@ exports.editExpense = async (req, res) => {
       date: date ? new Date(date) : new Date()
     });
 
+    req.flash('success_msg', 'Transaction updated successfully');
     res.redirect('/dashboard');
   } catch (err) {
     console.error("Edit Expense Error:", err);
+    req.flash('error_msg', 'Failed to update transaction');
     res.redirect('/dashboard');
   }
 };
@@ -157,13 +154,16 @@ exports.deleteExpense = async (req, res) => {
     });
 
     if (!deletedExpense) {
-      return res.status(403).send("Unauthorized action or item not found.");
+      req.flash('error_msg', 'Unauthorized action or item not found');
+      return res.redirect('/dashboard');
     }
 
+    req.flash('success_msg', 'Transaction deleted successfully');
     res.redirect('/dashboard');
   } catch (err) {
     console.error("Delete Error:", err);
-    res.status(500).send("Error deleting transaction");
+    req.flash('error_msg', 'Error deleting transaction');
+    res.redirect('/dashboard');
   }
 };
 
@@ -216,6 +216,7 @@ exports.updateProfile = async (req, res) => {
     );
 
     req.session.user = updatedUser;
+    req.flash('success_msg', 'Profile updated successfully');
     res.redirect('/profile');
   } catch (err) {
     console.error("Profile Update Error:", err);
@@ -223,35 +224,31 @@ exports.updateProfile = async (req, res) => {
   }
 };
 
-
-
-// POST: Set or Update Monthly Budget for a Category
 // POST: Set or Update Monthly Budget for a Category
 exports.setBudget = async (req, res) => {
   try {
     let { category, customCategory, monthlyLimit } = req.body;
     const userId = req.session.user._id;
 
-    // Agar category 'Other' select hui hai toh custom category use karein
     if (category === 'Other' && customCategory && customCategory.trim() !== '') {
       category = customCategory.trim();
     }
 
-    // Current Month string format "YYYY-MM"
     const now = new Date();
     const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
-    // Update if budget exists for this month & category, else create
     await Budget.findOneAndUpdate(
       { userId, category, month: currentMonth },
       { monthlyLimit: Number(monthlyLimit) },
       { upsert: true, new: true }
     );
 
+    req.flash('success_msg', 'Budget saved successfully');
     res.redirect('/dashboard');
   } catch (err) {
     console.error("Set Budget Error:", err);
-    res.status(500).send("Error saving budget");
+    req.flash('error_msg', 'Error saving budget');
+    res.redirect('/dashboard');
   }
 };
 
@@ -260,9 +257,11 @@ exports.deleteBudget = async (req, res) => {
   try {
     const budgetId = req.params.id;
     await Budget.findOneAndDelete({ _id: budgetId, userId: req.session.user._id });
+    req.flash('success_msg', 'Budget deleted successfully');
     res.redirect('/dashboard');
   } catch (err) {
     console.error("Delete Budget Error:", err);
-    res.status(500).send("Error deleting budget");
+    req.flash('error_msg', 'Error deleting budget');
+    res.redirect('/dashboard');
   }
 };

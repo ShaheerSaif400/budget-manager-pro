@@ -69,20 +69,44 @@ exports.getLogin = (req, res) => {
 };
 
 // POST: Login Handle
+// POST: Login Handle
 exports.postLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
+    
+    if (!email || !password) {
+      req.flash('error_msg', 'Please provide both email and password.');
+      return res.redirect('/login');
+    }
+
     const checkUser = await User.findOne({ email });
 
-    if (!checkUser) return res.send('User not found!');
+    if (!checkUser) {
+      req.flash('error_msg', 'User not found!');
+      return res.redirect('/login');
+    }
 
     const match = await bcrypt.compare(password, checkUser.password);
-    if (!match) return res.send('Incorrect password!');
+    if (!match) {
+      req.flash('error_msg', 'Incorrect password!');
+      return res.redirect('/login');
+    }
 
     req.session.user = checkUser;
-    res.redirect('/dashboard');
+    
+    req.session.save((err) => {
+      if (err) {
+        console.error("Session Save Error:", err);
+        req.flash('error_msg', 'Session error during login.');
+        return res.redirect('/login');
+      }
+      res.redirect('/dashboard');
+    });
+
   } catch (err) {
-    res.status(500).send('Login Error');
+    console.error("Login Detailed Catch Error:", err);
+    req.flash('error_msg', 'Server/Database Error during login.');
+    res.redirect('/login');
   }
 };
 
