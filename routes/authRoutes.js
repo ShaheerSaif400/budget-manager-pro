@@ -4,6 +4,7 @@ const multer = require('multer');
 const path = require('path');
 const authController = require('../controllers/authController');
 const expenseController = require('../controllers/expenseController');
+const { registerValidation, loginValidation, validate } = require('../middleware/validator');
 
 // Multer Storage Configuration
 const storage = multer.diskStorage({
@@ -26,11 +27,14 @@ const isAuth = (req, res, next) => {
 // Landing Page
 router.get('/', authController.getLanding);
 
-// Auth Routes
+// Auth View & Action Routes with Validation
 router.get('/login', authController.getLogin);
-router.post('/login', authController.postLogin);
+router.post('/login', loginValidation, validate, authController.postLogin);
+
 router.get('/signup', authController.getSignup);
-router.post('/signup', upload.single('avatar'), authController.postSignup);
+router.get('/register', authController.getSignup);
+router.post('/signup', upload.single('avatar'), registerValidation, validate, authController.postSignup);
+
 router.get('/logout', authController.logout);
 
 // Blog Routes

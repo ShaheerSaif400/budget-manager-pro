@@ -12,7 +12,19 @@
         <h3 class="fw-bold text-dark mb-1">Create Account</h3>
         <p class="text-muted small">Start managing your personal finances effectively</p>
       </div>
+<% if (error_msg && error_msg.length > 0) { %>
+  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <%= error_msg %>
+    <button type="type" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+<% } %>
 
+<% if (success_msg && success_msg.length > 0) { %>
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+    <%= success_msg %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+<% } %>
       <!-- Signup Form -->
       <form action="/signup" method="POST" enctype="multipart/form-data">
         

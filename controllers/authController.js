@@ -68,16 +68,10 @@ exports.getLogin = (req, res) => {
   res.render('login', { user: req.session.user || null });
 };
 
-
 // POST: Login Handle
 exports.postLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
-    
-    if (!email || !password) {
-      req.flash('error_msg', 'Please provide both email and password.');
-      return res.redirect('/login');
-    }
 
     const checkUser = await User.findOne({ email });
 
@@ -93,7 +87,6 @@ exports.postLogin = async (req, res) => {
     }
 
     req.session.user = checkUser;
-    
     req.flash('success_msg', `Welcome back, ${checkUser.name || 'User'}!`);
 
     req.session.save((err) => {
@@ -111,6 +104,7 @@ exports.postLogin = async (req, res) => {
     res.redirect('/login');
   }
 };
+
 // GET: Signup Page
 exports.getSignup = (req, res) => {
   res.render('signup', { user: req.session.user || null });
@@ -121,7 +115,10 @@ exports.postSignup = async (req, res) => {
   try {
     const { name, email, password } = req.body;
     let user = await User.findOne({ email });
-    if (user) return res.send('Email already exists');
+    if (user) {
+      req.flash('error_msg', 'Email already exists');
+      return res.redirect('/signup');
+    }
 
     const salt = await bcrypt.genSalt(10);
     const passHash = await bcrypt.hash(password, salt);
@@ -138,10 +135,12 @@ exports.postSignup = async (req, res) => {
       avatar: avatarPath
     });
 
+    req.flash('success_msg', 'Registration successful! Please log in.');
     res.redirect('/login');
   } catch (err) {
     console.error("Signup Error Detailed:", err);
-    res.status(500).send('Signup Error: ' + err.message);
+    req.flash('error_msg', 'Signup Error: ' + err.message);
+    res.redirect('/signup');
   }
 };
 

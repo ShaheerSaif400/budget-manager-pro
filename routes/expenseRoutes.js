@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const expenseController = require('../controllers/expenseController');
+const { transactionValidation, validate } = require('../middleware/validator');
 
 // Authentication Protection Middleware
 const isAuth = (req, res, next) => {
@@ -13,9 +14,9 @@ const isAuth = (req, res, next) => {
 // Dashboard Route
 router.get('/dashboard', isAuth, expenseController.getDashboard);
 
-// Expense Transactions Actions
-router.post('/add-expense', isAuth, expenseController.addExpense);
-router.post('/expense/edit/:id', isAuth, expenseController.editExpense);
+// Expense Transactions Actions with Validation
+router.post('/add-expense', isAuth, transactionValidation, validate, expenseController.addExpense);
+router.post('/expense/edit/:id', isAuth, transactionValidation, validate, expenseController.editExpense);
 router.post('/expense/delete/:id', isAuth, expenseController.deleteExpense);
 
 // Analytics & Profile Routes
