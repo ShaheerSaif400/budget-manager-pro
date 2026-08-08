@@ -40,9 +40,11 @@ app.use((req, res, next) => {
 // Routes
 const authRoutes = require('./routes/authRoutes');
 const expenseRoutes = require('./routes/expenseRoutes');
+const apiRoutes = require('./routes/apiRoutes');
 
 app.use('/', authRoutes);
 app.use('/', expenseRoutes);
+app.use('/api', apiRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
